@@ -1,4 +1,4 @@
-signature POKETYPES = sig
+signature POKETYPE = sig
 
   (* the types of pokemon and moves *)
   datatype pokeType
