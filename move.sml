@@ -12,6 +12,7 @@ signature MOVE = sig
   val getName : move -> string
   val getType : move -> PokeType.pokeType
   val getPp : move -> int
+  val updatePp : move -> move
   val getMaxPp : move -> int
   val getAccuracy : move -> real option
   val getPower : move -> power
