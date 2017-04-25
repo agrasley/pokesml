@@ -4,37 +4,35 @@ signature STATE = sig
     on the state and a transition function. *)
 
     (* datatype that defines the state *)
-    type State
+    type state
 
     (* datatype that defines effects possible on the state *)
-    type Effect
+    type effect
 
     (* The transition function, given a state, and an effect to apply, produces
     a new state that is the result of applying the effect to the former state *)
-    val tranFunc : State -> Effect -> State
+    val tranFunc : state -> effect -> state
 end
 
 signature ACTION = sig
     (* module that defines an action *)
+    structure State : STATE
 
     (* datatype that defines what an action is *)
-    type Action
-    type State
-    type Effect
-    
+    type action
+
     (* Function takes a state, and generates all possible actions for that state *)
-    val posAction : State -> Action list
+    val posAction : State.state -> action list
 
     (* Function takes an action, and a state and generates a list of effects on
     that state *)
-    val applyAction : Action -> State -> Effect list
+    val applyAction : action -> State.state -> State.effect list
 end
 
 signature AGENT = sig
     (* module that defines an agent *)
+    structure Action : ACTION
 
-    type Action
-             
     (* An agent should be a higher ordered function that selects an action in
     some way *)
     (* can we do type synonyms for functions? *)
@@ -42,21 +40,27 @@ signature AGENT = sig
 
     (* defines the behavior of an agent, given a list of actions, the agent
     function will select an action to take *)
-    val agentFuc : (Action list -> Action) -> Action list -> Action
+    (*val agentFun : (Action.action list -> Action.State.state -> Action.action) -> Action.action list -> Action.State.state -> Action.action*)
+    val agentFun : Action.action list -> Action.State.state -> Action.action
 end
 
 (* Functors *)
-(* functor tttAction (structure S : STATE) : ACTION = struct *)
-
-(*   structure State = S *)
-(* end *)
+functor Exec (A:AGENT) =
+  struct
+    fun step (s:A.Action.State.state) = let
+        val actions = A.Action.posAction s
+        val selection = A.agentFun actions s
+        val effects = A.Action.applyAction selection s
+      in
+        (*TODO*)
+  end
 
 (************************ Sample tic tac toe environment ***********************)
 signature MATRIX =
 sig
     type ''a row = ''a vector
     type ''a col = ''a vector
-                     
+
     type 'a matrix = 'a row col
     exception OutOfBounds
 
@@ -66,7 +70,7 @@ sig
 
     val lookup : index * index -> 'a matrix -> 'a
     val fromList : 'a list list -> 'a matrix option
-                                      
+
     val replace : index * index -> 'a -> 'a matrix -> 'a matrix
     val init : size -> 'a -> 'a matrix
     (* val getRow : index -> 'a matrix -> 'a row option *)
@@ -79,15 +83,15 @@ struct
   type ''a row = ''a vector
   type ''a col = ''a vector
   type 'a matrix = 'a row col
-                   
+
   type index = int
   type dimensions = index * index
   type size = index * index
-                          
+
   exception OutOfBounds
 
   open Vector
-           
+
   fun lookup (i, j) xs =
       let val x = Vector.sub (xs, i)
       in Vector.sub (x, j)
@@ -117,17 +121,17 @@ datatype cell
   | O
 
 (* should this be a functor? *)
-structure S = Matrix
-                 
-type State = cell S.matrix
+structure M = Matrix
+
+type state = cell M.matrix
 
 datatype effects
   = Place of cell * int * int
 
-type Effect = effects
+type effect = effects
 
-fun tranFunc board (Place (piece, i, j)) = S.replace (i, j) piece board
-                  
+fun tranFunc board (Place (piece, i, j)) = M.replace (i, j) piece board
+
 end
 
 (* Notes: We have enough to flesh out tic tac toe, I think if we wrote these out
