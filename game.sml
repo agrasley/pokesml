@@ -41,7 +41,8 @@ signature AGENT = sig
     (* defines the behavior of an agent, given a list of actions, the agent
     function will select an action to take *)
     (*val agentFun : (Action.action list -> Action.State.state -> Action.action) -> Action.action list -> Action.State.state -> Action.action*)
-    type agentFun = Action.action list -> Action.State.state -> Action.action * Action.State.state
+    type agentFun = Action.action list -> Action.State.state
+                    -> Action.action * Action.State.state
 
     val agentFun : agentFun
 
@@ -52,12 +53,11 @@ end
 (* This will return a struct, we still need a signature *)
 functor Exec (A:AGENT) =
   struct
-    fun step (s:A.Action.State.state) = let
-        val actions = A.Action.posAction s
-        val selection = A.agentFun actions s
-        val effects = A.Action.applyAction selection s
-      in
-
+    (* fun step (s:A.Action.State.state) = let *)
+    (*     val actions = A.Action.posAction s *)
+    (*     val selection = A.agentFun actions s *)
+    (*     val effects = A.Action.applyAction selection s *)
+    (*   in *)
           (* Top level threading order *)
           (* posAction -> agentFun -> applyAction -> tranFunc -> Loop *)
   end
