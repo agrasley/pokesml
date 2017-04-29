@@ -33,12 +33,14 @@ sig
 
     (* Traversal *)
     val map : ('a -> 'b) -> 'a matrix -> 'b matrix
+    val foldr : ('a -> 'b -> 'b) -> 'b -> 'a matrix -> 'b
+    val filter : ('a -> bool) -> 'a matrix -> 'a list
 
     (* Misc *)
     val isEmpty : 'a matrix -> bool
 end
 
-structure Matrix : MATRIX =
+structure Matrix :> MATRIX =
 struct
 
   type ''a row = ''a vector
@@ -53,7 +55,7 @@ struct
 
   open Vector
 
-  (* Constructors  *)
+  (*************************** Constructors ************************************)
   fun fromList xs = Vector.map Vector.fromList $ Vector.fromList xs
 
   fun init (i, j) seed =
@@ -61,26 +63,38 @@ struct
     in fromList (List.tabulate (i, mkRow))
     end
 
-  (* Traversal *)
+  (************************** Traversal ****************************************)
   fun map f mat = Vector.map (Vector.map f) mat
 
-  (* Misc *)
-  (* val isEmpty : 'a matrix -> bool *)
+  (* fun filter f acc (mat : 'a matrix) = *)
+  (*   Vector.map Vector.fromList $ Vector.map *)
+  (*              (Vector.foldr *)
+  (*                   (fn (x, xs) => if f x *)
+  (*                                  then x::xs *)
+  (*                                  else xs) acc) *)
+  (*              mat *)
+   
+  fun foldr f acc mat =
+    Vector.foldr (fn (x, xs) => Vector.foldr (uncurry f) xs x) acc mat
+
+  fun filter f = foldr (fn x => fn xs => if f x then x::xs else xs) []
+                 
+  (**************************** Misc *******************************************)
   fun isEmpty m = Vector.all (fn x => length x = 0) m
 
-  (* Destructors  *)
-  fun toList mat = foldr (fn (x, y) => foldr (op ::) y x) [] mat
+  (**************************** Destructors ************************************)
+  fun toList mat = Vector.foldr (fn (x, y) => Vector.foldr (op ::) y x) [] mat
 
-  (* Setters *)
+  (***************************** Setters ***************************************)
   fun replace (i, j) elem matrix =
     let val newrow = Vector.update (Vector.sub (matrix, i), j, elem)
     in Vector.update (matrix, i, newrow)
     end
 
   fun reverse (mat : 'a Matrix.matrix) : 'a Matrix.matrix
-    = Vector.map (Vector.foldl op:: []) mat
+    = Vector.map (Vector.fromList o Vector.foldl op:: []) mat
 
-  (* Getters *)
+  (***************************** Getters ***************************************)
   fun lookup (i, j) xs =
     let val x = Vector.sub (xs, i)
     in Vector.sub (x, j)
@@ -88,10 +102,8 @@ struct
 
   fun getRow i mat = Vector.sub (mat, i)
 
-  (* val getCol : index -> 'a matrix -> 'a list option *)
   fun getCol i m = Vector.map (fn x => Vector.sub (x, i)) m
                                         
-  (* val getDiagL : 'a matrix -> 'a vector *)
   fun getDiagL mat =
     let val cnt = 0 in
         let fun helper i m = (case (isEmpty m) of
@@ -103,26 +115,22 @@ struct
 
   fun getDiagR mat = getDiagL $ reverse mat
 
-
-
-
 end
 
 (**************************** TicTacToe State **********************************)
-structure tttState :> STATE =
-struct
+structure tttState : STATE = struct
+
+  structure M = Matrix
 
   datatype cell
-    = Empty
-    | X
-    | O
-  
-  structure M = Matrix
-  
+    = Empty 
+    | X of M.index * M.index
+    | O of M.index * M.index
+                         
   type state = cell M.matrix
   
   datatype effects
-    = Place of cell * M.index * M.index
+    = Place of cell
   
   type effect = effects
   
@@ -131,14 +139,19 @@ struct
 end
 
 (************************* TicTacToe Action ************************************)
-(* structure tttAction :> ACTION = *)
-(* struct *)
+functor tttAction (structure State : STATE
+                   structure M : MATRIX
+                  ) : ACTION = struct
 
-(*   structure S = tttState *)
+  (* An action is the same as an effect for tic tac toe *)
+  type action = State.effect
 
-(*   (* An action is the same as an effect for tic tac toe *) *)
-(*   type action = S.effects *)
-
-(*                     fun posAction st =  *)
-(* end *)
+                    (* Why doesn't this work? *)
+  fun posAction (st : State.state) =
+    let fun isEmpty Empty = true
+          | isEmpty _     = false
+    in M.filter isEmpty st
+    end
+                         
+end
 (************************* TicTacToe Agent  ************************************)
