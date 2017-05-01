@@ -110,6 +110,8 @@ struct
 end
 
 (**************************** TicTacToe State **********************************)
+(* Notice this doesn't use the state signature, if it did we wouldn't be able to *)
+(* access the Place constructor *)
 structure tttState = struct
 
   (* structure M = Matrix *)
@@ -134,8 +136,6 @@ structure tttState = struct
                                                   
 end
 
-
-                         
 (************************* TicTacToe Action ************************************)
 structure tttAction : ACTION = struct
 
