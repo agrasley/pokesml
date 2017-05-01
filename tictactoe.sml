@@ -66,14 +66,6 @@ struct
   (************************** Traversal ****************************************)
   fun map f mat = Vector.map (Vector.map f) mat
 
-  (* fun filter f acc (mat : 'a matrix) = *)
-  (*   Vector.map Vector.fromList $ Vector.map *)
-  (*              (Vector.foldr *)
-  (*                   (fn (x, xs) => if f x *)
-  (*                                  then x::xs *)
-  (*                                  else xs) acc) *)
-  (*              mat *)
-   
   fun foldr f acc mat =
     Vector.foldr (fn (x, xs) => Vector.foldr (uncurry f) xs x) acc mat
 
@@ -118,40 +110,44 @@ struct
 end
 
 (**************************** TicTacToe State **********************************)
-structure tttState : STATE = struct
+structure tttState = struct
 
-  structure M = Matrix
+  (* structure M = Matrix *)
+  (* open M *)
 
-  datatype cell
+  datatype primitive
     = Empty 
-    | X of M.index * M.index
-    | O of M.index * M.index
+    | X of index * index
+    | O of index * index
                          
-  type state = cell M.matrix
+  type state = primitive matrix
   
-  datatype effects
-    = Place of cell
+  datatype effect
+    = Place of primitive
   
-  type effect = effects
-  
-  fun tranFunc board (Place (piece, i, j)) = M.replace (i, j) piece board
+  fun tranFunc board (Place (Empty)) = board
+    | tranFunc board (Place (X coords)) = replace coords (X coords) board
+    | tranFunc board (Place (O coords)) = replace coords (O coords) board
 
+  fun isEmpty Empty  = true
+    | isEmpty _      = false
+                                                  
 end
 
+
+                         
 (************************* TicTacToe Action ************************************)
-functor tttAction (structure State : STATE
-                   structure M : MATRIX
-                  ) : ACTION = struct
+structure tttAction : ACTION = struct
 
   (* An action is the same as an effect for tic tac toe *)
+  structure State = tttState
+
   type action = State.effect
 
-                    (* Why doesn't this work? *)
   fun posAction (st : State.state) =
-    let fun isEmpty Empty = true
-          | isEmpty _     = false
-    in M.filter isEmpty st
-    end
+    List.map State.Place $ filter State.isEmpty st
                          
+  fun applyAction (a, st) = ([a], st)
+
 end
 (************************* TicTacToe Agent  ************************************)

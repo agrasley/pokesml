@@ -3,8 +3,12 @@ signature STATE = sig
     (* module that denotes a State, defines what the state is, effects possible
     on the state and a transition function. *)
 
+    (* structure M *)
     (* datatype that defines the state *)
     type state
+
+    (* datatype that is the constituent part which a state is composed of *)
+    type primitive
 
     (* datatype that defines effects possible on the state *)
     type effect
@@ -12,6 +16,9 @@ signature STATE = sig
     (* The transition function, given a state, and an effect to apply, produces
     a new state that is the result of applying the effect to the former state *)
     val tranFunc : state -> effect -> state
+
+    (* Function that determines if a primitive is empty *)
+    val isEmpty : primitive -> bool
 end
 
 signature ACTION = sig
