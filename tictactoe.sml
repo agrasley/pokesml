@@ -70,7 +70,7 @@ struct
     Vector.foldr (fn (x, xs) => Vector.foldr (uncurry f) xs x) acc mat
 
   fun filter f = foldr (fn x => fn xs => if f x then x::xs else xs) []
-                 
+
   (**************************** Misc *******************************************)
   fun isEmpty m = Vector.all (fn x => length x = 0) m
 
@@ -83,7 +83,7 @@ struct
     in Vector.update (matrix, i, newrow)
     end
 
-  fun reverse (mat : 'a Matrix.matrix) : 'a Matrix.matrix
+  fun reverse (mat : 'a matrix) : 'a matrix
     = Vector.map (Vector.fromList o Vector.foldl op:: []) mat
 
   (***************************** Getters ***************************************)
@@ -95,7 +95,7 @@ struct
   fun getRow i mat = Vector.sub (mat, i)
 
   fun getCol i m = Vector.map (fn x => Vector.sub (x, i)) m
-                                        
+
   fun getDiagL mat =
     let val cnt = 0 in
         let fun helper i m = (case (isEmpty m) of
@@ -114,40 +114,58 @@ end
 (* access the Place constructor *)
 structure tttState = struct
 
-  (* structure M = Matrix *)
-  (* open M *)
-
-  datatype primitive
-    = Empty 
+  open Matrix
+  datatype cell
+    = Empty
     | X of index * index
     | O of index * index
-                         
-  type state = primitive matrix
-  
+
+  type state = cell matrix
+
   datatype effect
-    = Place of primitive
-  
+    = Place of cell
+
   fun tranFunc board (Place (Empty)) = board
     | tranFunc board (Place (X coords)) = replace coords (X coords) board
     | tranFunc board (Place (O coords)) = replace coords (O coords) board
 
   fun isEmpty Empty  = true
     | isEmpty _      = false
-                                                  
+
 end
 
 (************************* TicTacToe Action ************************************)
 structure tttAction : ACTION = struct
 
-  (* An action is the same as an effect for tic tac toe *)
+  (* tttState is still of type : STATE, but is enriched *)
   structure State = tttState
 
+  (* An action is the same as an effect for tic tac toe *)
   type action = State.effect
 
   fun posAction (st : State.state) =
-    List.map State.Place $ filter State.isEmpty st
-                         
+    List.map State.Place $ State.filter State.isEmpty st
+
   fun applyAction (a, st) = ([a], st)
 
 end
 (************************* TicTacToe Agent  ************************************)
+functor Agent (A : ACTION) : AGENT =
+struct
+
+  structure Action = A
+
+  type agentFun = Action.action list -> Action.State.state
+                  -> Action.action * Action.State.state
+
+  (* A function to make agentFunctions given some HOF *)
+  fun agentFunGen f xs st = (f xs, st)
+
+  (* some dumb agents *)
+  fun agentOne xs = agentFunGen hd xs
+  fun agentTwo xs = agentFunGen List.last xs
+
+  val agents = [agentOne, agentOne]
+end
+
+structure tttAgents = tttAgent(tttAction)
