@@ -7,9 +7,6 @@ signature STATE = sig
     (* datatype that defines the state *)
     type state
 
-    (* datatype that is the constituent part which a state is composed of *)
-    type primitive
-
     (* datatype that defines effects possible on the state *)
     type effect
 
@@ -17,8 +14,6 @@ signature STATE = sig
     a new state that is the result of applying the effect to the former state *)
     val tranFunc : state -> effect -> state
 
-    (* Function that determines if a primitive is empty *)
-    val isEmpty : primitive -> bool
 end
 
 signature ACTION = sig
@@ -51,15 +46,13 @@ signature AGENT = sig
     type agentFun = Action.action list -> Action.State.state
                     -> Action.action * Action.State.state
 
-    val agentFun : agentFun
-
     val agents : agentFun list
 end
 
 (* Functors *)
 (* This will return a struct, we still need a signature *)
 functor Exec (A:AGENT) =
-  struct
+struct
     (* fun step (s:A.Action.State.state) = let *)
     (*     val actions = A.Action.posAction s *)
     (*     val selection = A.agentFun actions s *)
