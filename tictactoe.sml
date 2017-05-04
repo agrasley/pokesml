@@ -32,7 +32,8 @@ sig
     val reverse : 'a matrix -> 'a matrix
 
     (* Traversal *)
-    val map : ('a -> 'b) -> 'a matrix -> 'b matrix
+    val mapElem : ('a -> 'b) -> 'a matrix -> 'b matrix
+    val mapRow : ('a row -> 'b) -> 'a matrix -> 'b vector
     val foldr : ('a -> 'b -> 'b) -> 'b -> 'a matrix -> 'b
     val filter : ('a -> bool) -> 'a matrix -> 'a list
 
@@ -64,7 +65,8 @@ struct
     end
 
   (************************** Traversal ****************************************)
-  fun map f mat = Vector.map (Vector.map f) mat
+  fun mapElem f mat = Vector.map (Vector.map f) mat
+  fun mapRow f (mat : 'a matrix) = Vector.map f mat
 
   fun foldr f acc mat =
     Vector.foldr (fn (x, xs) => Vector.foldr (uncurry f) xs x) acc mat
@@ -116,7 +118,7 @@ structure tttState = struct
 
   open Matrix
   datatype cell
-    = Empty
+    = Empty of index * index
     | X of index * index
     | O of index * index
 
@@ -125,12 +127,17 @@ structure tttState = struct
   datatype effect
     = Place of cell
 
-  fun tranFunc board (Place (Empty)) = board
+  fun tranFunc board (Place (Empty _)) = board
     | tranFunc board (Place (X coords)) = replace coords (X coords) board
     | tranFunc board (Place (O coords)) = replace coords (O coords) board
 
-  fun isEmpty Empty  = true
-    | isEmpty _      = false
+  fun isEmpty (Empty _) = true
+    | isEmpty _         = false
+
+  (* Not sure where this function should be *)
+  fun toString (Empty _) = " "
+    | toString (X _)     = "X"
+    | toString (O _)     = "O"
 
 end
 
