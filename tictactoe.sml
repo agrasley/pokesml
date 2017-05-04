@@ -193,6 +193,7 @@ structure tttShow :> SHOW = struct
 
   type a = S.state
 
+  (* This will need to be changed for pretty printing *)
   fun show mat = String.concat o S.toList o S.mapElem CS.show $ mat
 
 end
