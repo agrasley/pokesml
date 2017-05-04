@@ -169,6 +169,7 @@ struct
   fun agentTwo xs = agentFunGen List.last xs
 
   val agents = [agentOne, agentOne]
+
 end
 
 structure tttAgents = Agent(tttAction)
@@ -182,9 +183,10 @@ structure cellShow : SHOW = struct
   fun show (S.Empty _) = " "
     | show (S.X _)     = "X"
     | show (S.O _)     = "O"
+
 end 
 
-structure tttShow : SHOW = struct
+structure tttShow :> SHOW = struct
 
   structure S = tttState
   structure CS = cellShow
@@ -192,4 +194,7 @@ structure tttShow : SHOW = struct
   type a = S.state
 
   fun show mat = String.concat o S.toList o S.mapElem CS.show $ mat
+
 end
+
+structure tttIO = Io(structure Sh = tttShow)
