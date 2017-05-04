@@ -1,5 +1,6 @@
 use "game.sml";
 use "utils.sml";
+use "repl.sml";
 
 (************************ Sample tic tac toe environment ***********************)
 signature MATRIX =
@@ -134,11 +135,6 @@ structure tttState = struct
   fun isEmpty (Empty _) = true
     | isEmpty _         = false
 
-  (* Not sure where this function should be *)
-  fun toString (Empty _) = " "
-    | toString (X _)     = "X"
-    | toString (O _)     = "O"
-
 end
 
 (************************* TicTacToe Action ************************************)
@@ -175,4 +171,23 @@ struct
   val agents = [agentOne, agentOne]
 end
 
-structure tttAgents = tttAgent(tttAction)
+structure tttAgents = Agent(tttAction)
+
+(************************* TicTacToe Show **************************************)
+structure cellShow : SHOW = struct
+  structure S = tttState
+
+  type a = S.cell
+
+  fun show (S.Empty _) = " "
+    | show (S.X _)     = "X"
+    | show (S.O _)     = "O"
+end 
+
+(* structure tttShow : SHOW = *)
+(* struct *)
+(*   structure S : tttState *)
+
+(*   type a = S.state *)
+
+(*   fun show *)
