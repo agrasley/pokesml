@@ -12,10 +12,10 @@ sig
     val read : 'a -> string option
 end
 
-functor Io (structure S : SHOW) : IO =
+functor Io (structure Sh : SHOW) : IO =
 struct
 
-  structure S = S
+  structure S = Sh
 
   fun print x = let val str = S.show x
                in TextIO.output (TextIO.stdOut, str)
