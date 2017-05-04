@@ -1,17 +1,29 @@
 use "utils.sml";
+use "tictactoe.sml";
 
-signature DISPLAY =
+signature SHOW =
 sig
-    type display;
-
-    val show : display -> string
-
-    val output : string -> unit
+    type a
+    val show : 'a -> string
 end
 
-signature READ =
+signature IO =
 sig
-    structure A : ACTION
+    structure S : SHOW
 
-    val read : string -> A.action
+    val print : S.a -> unit
+    val read : 'a -> string option
+end
+
+functor Io (structure S : SHOW) : IO =
+struct
+
+  structure S = S
+
+  fun print x = let val str = S.show x
+               in TextIO.output (TextIO.stdOut, str)
+               end
+
+  fun read x = TextIO.inputLine TextIO.stdIn
+
 end
