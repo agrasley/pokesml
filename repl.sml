@@ -21,6 +21,30 @@ struct
                in TextIO.output (TextIO.stdOut, str)
                end
 
-  fun read x = TextIO.inputLine TextIO.stdIn
+  (* function to get user input, it doesn't do anything with its argument *)
+  fun read _ = TextIO.inputLine TextIO.stdIn
 
 end
+
+signature EVAL =
+sig
+    (* stucture for state *)
+    structure S
+
+    (* type for an expression to be eval'd *)
+    type expr
+
+    (* check if an expression is valid *)
+    val isValid : expr -> bool
+
+    (* message to print if expression is not valid *)
+    val notValidMessage : string
+
+    (* function that evaluations the expression on some state *)
+    val eval : expr -> S.state -> S.state
+end
+
+(* signature PARSE = *)
+(* sig *)
+(*     (* type that we are parsing to *) *)
+(*     type result *)
