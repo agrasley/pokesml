@@ -1,10 +1,7 @@
-use "utils.sml";
-use "tictactoe.sml";
-
 signature SHOW =
 sig
     type a
-    val show : 'a -> string
+    val show : a -> string
 end
 
 signature IO =
