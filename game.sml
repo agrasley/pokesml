@@ -3,7 +3,6 @@ signature STATE = sig
     (* module that denotes a State, defines what the state is, effects possible
     on the state and a transition function. *)
 
-    (* structure M *)
     (* datatype that defines the state *)
     type state
 
@@ -12,7 +11,7 @@ signature STATE = sig
 
     (* The transition function, given a state, and an effect to apply, produces
     a new state that is the result of applying the effect to the former state *)
-    val tranFunc : state -> effect -> state
+    val tranFunc : effect -> state -> state
 
 end
 
