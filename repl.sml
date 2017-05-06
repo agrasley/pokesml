@@ -46,13 +46,21 @@ end
 
 signature PARSE =
 sig
+    (* this will only work for games, probably want a more general parser *)
     structure A : ACTION
 
-    val parse : string -> A.action
+    val parse : string -> A.action option
 
-    (* check if an expression is valid *)
-    val isValid : string -> bool
+end
+
+signature VALIDATE =
+sig
+    structure S : STATE
+    structure A : ACTION
+
+    val validate : A.action -> S.state -> A.action option
 
     (* message to print if expression is not valid *)
     val notValidMessage : string
+
 end
