@@ -11,10 +11,19 @@ sig
     type 'a matrix = 'a row col
     exception OutOfBounds
 
-    type index
-    type dimensions = index * index
-    type size = index * index
+    (* doing it this way led to a bunch of typy synonym errors like this *)
+    (*/tmp/emacs-region726BiT:233.8-235.58 Error: case object and rules don't agree [tycon mismatch] *)
+    (* rule domain: index option *)
+    (* object: int option *)
+    (* in expression: *)
+    (*    (case (parseDigit x) *)
+    (*      of NONE => parseHelper xs *)
+    (*       | SOME (i : index) => i :: parseHelper xs) *)
+    (* type index *)
+    (* type size = index * index *)
+    (* index IS JUST A TYPE SYNONYM for Int *)
 
+    type size = int * int
     (* Constructors *)
     val fromList : 'a list list -> 'a matrix
     val init : size -> 'a -> 'a matrix
@@ -23,13 +32,17 @@ sig
     val toList : 'a matrix -> 'a list
 
     (* Getters *)
-    val lookup : index * index -> 'a matrix -> 'a
-    val getRow : index -> 'a matrix -> 'a row
-    val getCol : index -> 'a matrix -> 'a col
+    val lookup : int * int -> 'a matrix -> 'a
+    val getRow : int -> 'a matrix -> 'a row
+    val getCol : int -> 'a matrix -> 'a col
     val getDiagL : 'a matrix -> 'a vector
+    val getDiagR : 'a matrix -> 'a vector
+    val rowLength : 'a matrix -> int
+    val colLength : 'a matrix -> int
+    val dimensions : 'a matrix -> size
 
     (* Setters and Manipulation*)
-    val replace : index * index -> 'a -> 'a matrix -> 'a matrix
+    val replace : int * int -> 'a -> 'a matrix -> 'a matrix
     val reverse : 'a matrix -> 'a matrix
 
     (* Traversal *)
@@ -48,10 +61,7 @@ struct
   type ''a row = ''a vector
   type ''a col = ''a vector
   type 'a matrix = 'a row col
-
-  type index = int
-  type dimensions = index * index
-  type size = index * index
+  type size = int * int
 
   exception OutOfBounds
 
@@ -99,6 +109,12 @@ struct
 
   fun getCol i m = Vector.map (fn x => Vector.sub (x, i)) m
 
+  fun rowLength mat = Vector.foldr (fn (_, y) => 1 + y) 0 o getRow 0 $ mat
+
+  fun colLength mat = Vector.foldr (fn (_, y) => 1 + y) 0 mat
+
+  fun dimensions mat = (rowLength mat, colLength mat)
+
   fun getDiagL mat =
     let val cnt = 0 in
         let fun helper i m = (case (isEmpty m) of
@@ -118,10 +134,11 @@ end
 structure tttState = struct
 
   open Matrix
+
   datatype cell
-    = Empty of index * index
-    | X of index * index
-    | O of index * index
+    = Empty of int * int
+    | X of int * int
+    | O of int * int
 
   type state = cell matrix
 
@@ -138,7 +155,9 @@ structure tttState = struct
 end
 
 (************************* TicTacToe Action ************************************)
-structure tttAction : ACTION = struct
+(* when I transparently ascribe we lose access to A.state.Place for some reason *)
+(* structure tttAction : ACTION = struct *)
+structure tttAction = struct
 
   (* tttState is still of type : STATE, but is enriched *)
   structure State = tttState
@@ -201,7 +220,7 @@ end
 structure tttIO = Io(structure Sh = tttShow)
 
 (************************* TicTacToe Eval **************************************)
-functor Eval (Sh : STATE) : EVAL = struct
+functor Eval (Sh : STATE) :> EVAL = struct
   structure S = Sh
 
   type expr = S.effect
@@ -210,3 +229,58 @@ functor Eval (Sh : STATE) : EVAL = struct
 end
 
 structure tttEval = Eval(tttState)
+(************************* TicTacToe Parse**************************************)
+(* functor Parse (A : ACTION) :> PARSE = struct *)
+(*   structure A = A *)
+
+(*   (* This is needed for the parse, I don't think it should be in the sig *) *)
+(*   open tttState *)
+
+(*   fun parseDigit x = Int.fromString x *)
+
+(*   (* this is really just a blind tokenize *) *)
+(*   fun parseHelper (x::xs) : Matrix.index list *)
+(*     = (case parseDigit x of *)
+(*            NONE => parseHelper xs *)
+(*          | SOME (i : Matrix.index) => i :: parseHelper xs) *)
+(*     | parseHelper nil     = nil *)
+
+(*   fun shitParse (str) = *)
+(*     (case explode str *)
+(*       of nil => NONE *)
+(*        | (x::xs) => (case Char.toString x *)
+(*                               (* a code smell indeed *) *)
+(*                       of "X" => (case parseHelper $ map Char.toString xs *)
+(*                                   of nil => NONE  *)
+(*                                    | (x::y::xs) => SOME o Place o X $ (x, y)) *)
+(*                        | "O" => (case parseHelper $ map Char.toString xs *)
+(*                                   of nil => NONE *)
+(*                                    | (x::y::xs) => SOME o Place o O $ (x, y)))) *)
+
+(*   (* A useful reminder to how much the parse could improve *) *)
+(*   fun parse str = shitParse str *)
+
+(* end *)
+
+structure Validate :> VALIDATE = struct
+
+  structure A = tttAction
+  structure S = tttState
+
+  (* Takes it off!!! It hurtses us!! *)
+  fun validate (A.State.Place (S.X (x, y))) mat =
+    if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
+    then SOME o A.State.Place o S.X $ (x, y)
+    else NONE
+    | validate (A.State.Place (S.O (x, y))) mat =
+      if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
+      then SOME o A.State.Place o S.X $ (x, y)
+      else NONE
+    | validate (A.State.Place (S.Empty (x, y))) mat =
+      if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
+      then SOME o A.State.Place o S.X $ (x, y)
+      else NONE
+
+
+  val notValidMessage = "Bad Move!"
+end
