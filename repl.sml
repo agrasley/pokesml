@@ -29,22 +29,30 @@ end
 signature EVAL =
 sig
     (* stucture for state *)
-    structure S
+    structure S : STATE
 
     (* type for an expression to be eval'd *)
     type expr
 
-    (* check if an expression is valid *)
-    val isValid : expr -> bool
-
-    (* message to print if expression is not valid *)
-    val notValidMessage : string
-
     (* function that evaluations the expression on some state *)
     val eval : expr -> S.state -> S.state
+
 end
 
-(* signature PARSE = *)
+(* signature CONTROLLER = *)
 (* sig *)
 (*     (* type that we are parsing to *) *)
 (*     type result *)
+
+signature PARSE =
+sig
+    structure A : ACTION
+
+    val parse : string -> A.action
+
+    (* check if an expression is valid *)
+    val isValid : string -> bool
+
+    (* message to print if expression is not valid *)
+    val notValidMessage : string
+end
