@@ -128,9 +128,9 @@ structure tttState = struct
   datatype effect
     = Place of cell
 
-  fun tranFunc board (Place (Empty _)) = board
-    | tranFunc board (Place (X coords)) = replace coords (X coords) board
-    | tranFunc board (Place (O coords)) = replace coords (O coords) board
+  fun tranFunc (Place (Empty _)) board  = board
+    | tranFunc (Place (X coords)) board = replace coords (X coords) board
+    | tranFunc (Place (O coords)) board = replace coords (O coords) board
 
   fun isEmpty (Empty _) = true
     | isEmpty _         = false
@@ -199,3 +199,14 @@ structure tttShow :> SHOW = struct
 end
 
 structure tttIO = Io(structure Sh = tttShow)
+
+(************************* TicTacToe Eval **************************************)
+functor Eval (Sh : STATE) : EVAL = struct
+  structure S = Sh
+
+  type expr = S.effect
+
+  fun eval x = S.tranFunc x
+end
+
+structure tttEval = Eval(tttState)
