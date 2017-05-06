@@ -230,37 +230,39 @@ end
 
 structure tttEval = Eval(tttState)
 (************************* TicTacToe Parse**************************************)
-(* functor Parse (A : ACTION) :> PARSE = struct *)
-(*   structure A = A *)
+structure Parse :> PARSE = struct
+  structure A = tttAction
+  structure S = tttState
 
-(*   (* This is needed for the parse, I don't think it should be in the sig *) *)
-(*   open tttState *)
+  (* This is needed for the parse, I don't think it should be in the sig *)
+  (* open tttState *)
 
-(*   fun parseDigit x = Int.fromString x *)
+  fun parseDigit x = Int.fromString x
 
-(*   (* this is really just a blind tokenize *) *)
-(*   fun parseHelper (x::xs) : Matrix.index list *)
-(*     = (case parseDigit x of *)
-(*            NONE => parseHelper xs *)
-(*          | SOME (i : Matrix.index) => i :: parseHelper xs) *)
-(*     | parseHelper nil     = nil *)
+  (* this is really just a blind tokenize *)
+  fun parseHelper (x::xs)
+    = (case parseDigit x of
+           NONE => parseHelper xs
+         | SOME i  => i :: parseHelper xs)
+    | parseHelper nil     = nil
 
-(*   fun shitParse (str) = *)
-(*     (case explode str *)
-(*       of nil => NONE *)
-(*        | (x::xs) => (case Char.toString x *)
-(*                               (* a code smell indeed *) *)
-(*                       of "X" => (case parseHelper $ map Char.toString xs *)
-(*                                   of nil => NONE  *)
-(*                                    | (x::y::xs) => SOME o Place o X $ (x, y)) *)
-(*                        | "O" => (case parseHelper $ map Char.toString xs *)
-(*                                   of nil => NONE *)
-(*                                    | (x::y::xs) => SOME o Place o O $ (x, y)))) *)
+  fun shitParse (str) =
+    (case explode str
+      of nil => NONE
+       | (x::xs) => (case Char.toString x
+                              (* a code smell indeed *)
+                      of "X" => (case parseHelper $ map Char.toString xs
+                                  of (x::y::xs) => SOME o A.State.Place o S.X $ (x, y)
+                                  |  _          => NONE)
+                       | "O" => (case parseHelper $ map Char.toString xs
+                                  of (x::y::xs) => SOME o A.State.Place o S.O $ (x, y)
+                                  |  _          => NONE)
+                       | _  => NONE))
 
-(*   (* A useful reminder to how much the parse could improve *) *)
-(*   fun parse str = shitParse str *)
+  (* A useful reminder to how much the parse could improve *)
+  fun parse str = shitParse str
 
-(* end *)
+end
 
 structure Validate :> VALIDATE = struct
 
