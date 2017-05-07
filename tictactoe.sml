@@ -29,7 +29,7 @@ sig
     val init : size -> 'a -> 'a matrix
 
     (* Destructors *)
-    val toList : 'a matrix -> 'a list
+    val toList : 'a matrix -> 'a list list
 
     (* Getters *)
     val lookup : int * int -> 'a matrix -> 'a
@@ -88,7 +88,7 @@ struct
   fun isEmpty m = Vector.all (fn x => length x = 0) m
 
   (**************************** Destructors ************************************)
-  fun toList mat = Vector.foldr (fn (x, y) => Vector.foldr (op ::) y x) [] mat
+  fun toList mat = Vector.toList $ Vector.map (Vector.toList) mat
 
   (***************************** Setters ***************************************)
   fun replace (i, j) elem matrix =
@@ -136,21 +136,21 @@ structure tttState = struct
   open Matrix
 
   datatype cell
-    = Empty of int * int
-    | X of int * int
-    | O of int * int
+    = Empty 
+    | X 
+    | O 
 
   type state = cell matrix
 
   datatype effect
-    = Place of cell
+    = Place of cell * int * int
 
-  fun tranFunc (Place (Empty _)) board  = board
-    | tranFunc (Place (X coords)) board = replace coords (X coords) board
-    | tranFunc (Place (O coords)) board = replace coords (O coords) board
+  fun tranFunc (Place (Empty, x, y)) board  = board
+    | tranFunc (Place (X    , x, y)) board = replace (x, y) X board
+    | tranFunc (Place (O    , x, y)) board = replace (x, y) O board
 
-  fun isEmpty (Empty _) = true
-    | isEmpty _         = false
+  fun isEmpty Empty = true
+    | isEmpty _     = false
 
 end
 
@@ -165,8 +165,22 @@ structure tttAction = struct
   (* An action is the same as an effect for tic tac toe *)
   type action = State.effect
 
+  (* this will be slow, optimize later by implementing zip in terms of foldr *)
+  fun enumerateList xs =
+    let fun helper cnt (x::xs) = (cnt, x) :: helper (cnt + 1) xs
+          | helper cnt []      = []
+    in helper 0 xs
+    end
+
+  fun enumNestedList xs = enumerateList o map enumerateList $ xs
+
+  (* This function is specfic to repair the list structure coming from the
+     enumerate functions *)
+  fun repair xs = map (fn (i, ys) => map (fn (j, elem) => (elem, i, j)) ys) xs
+
   fun posAction (st : State.state) =
-    List.map State.Place $ State.filter State.isEmpty st
+    List.map State.Place o List.filter (State.isEmpty o fst3) o
+    List.concat o repair o enumNestedList o State.toList $ st
 
   fun applyAction (a, st) = ([a], st)
 
@@ -199,9 +213,9 @@ structure cellShow : SHOW = struct
 
   type a = S.cell
 
-  fun show (S.Empty _) = " "
-    | show (S.X _)     = "X"
-    | show (S.O _)     = "O"
+  fun show S.Empty = " "
+    | show S.X     = "X"
+    | show S.O     = "O"
 
 end 
 
@@ -213,14 +227,14 @@ structure tttShow :> SHOW = struct
   type a = S.state
 
   (* This will need to be changed for pretty printing *)
-  fun show mat = String.concat o S.toList o S.mapElem CS.show $ mat
+  fun show mat = String.concat o List.concat o S.toList o S.mapElem CS.show $ mat
 
 end
 
 structure tttIO = Io(structure Sh = tttShow)
 
 (************************* TicTacToe Eval **************************************)
-functor Eval (Sh : STATE) :> EVAL = struct
+functor tttEval (Sh : STATE) :> EVAL = struct
   structure S = Sh
 
   type expr = S.effect
@@ -229,8 +243,9 @@ functor Eval (Sh : STATE) :> EVAL = struct
 end
 
 structure tttEval = Eval(tttState)
-(************************* TicTacToe Parse**************************************)
-structure Parse :> PARSE = struct
+
+(************************* TicTacToe Parse *************************************)
+structure tttParse :> PARSE = struct
   structure A = tttAction
   structure S = tttState
 
@@ -252,10 +267,10 @@ structure Parse :> PARSE = struct
        | (x::xs) => (case Char.toString x
                               (* a code smell indeed *)
                       of "X" => (case parseHelper $ map Char.toString xs
-                                  of (x::y::xs) => SOME o A.State.Place o S.X $ (x, y)
+                                  of (x::y::xs) => SOME o A.State.Place $ (S.X, x, y)
                                   |  _          => NONE)
                        | "O" => (case parseHelper $ map Char.toString xs
-                                  of (x::y::xs) => SOME o A.State.Place o S.O $ (x, y)
+                                  of (x::y::xs) => SOME o A.State.Place $ (S.O, x, y)
                                   |  _          => NONE)
                        | _  => NONE))
 
@@ -264,25 +279,37 @@ structure Parse :> PARSE = struct
 
 end
 
-structure Validate :> VALIDATE = struct
+structure tttValidate :> VALIDATE = struct
 
   structure A = tttAction
   structure S = tttState
 
   (* Takes it off!!! It hurtses us!! *)
-  fun validate (A.State.Place (S.X (x, y))) mat =
+  fun validate (A.State.Place (S.X, x, y)) mat =
     if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
-    then SOME o A.State.Place o S.X $ (x, y)
+    then SOME o A.State.Place $ (S.X, x, y)
     else NONE
-    | validate (A.State.Place (S.O (x, y))) mat =
+    | validate (A.State.Place (S.O, x, y)) mat =
       if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
-      then SOME o A.State.Place o S.X $ (x, y)
+      then SOME o A.State.Place $ (S.O, x, y)
       else NONE
-    | validate (A.State.Place (S.Empty (x, y))) mat =
+    | validate (A.State.Place (S.Empty, x, y)) mat =
       if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
-      then SOME o A.State.Place o S.X $ (x, y)
+      then SOME o A.State.Place $ (S.Empty, x, y)
       else NONE
 
 
   val notValidMessage = "Bad Move!"
 end
+
+(************************* TicTacToe Main **************************************)
+(* structure Main = struct *)
+
+(*    (* structs  *) *)
+(*   structure S = tttState *)
+(*   structure A = tttAction *)
+(*   structure Ag = tttAgent *)
+(*   structure Sh = tttShow *)
+(*   structure P = tttParse *)
+(*   structure E = tttEval *)
+(*   structure V = tttValidate *)
