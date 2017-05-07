@@ -219,7 +219,7 @@ structure cellShow : SHOW = struct
 
 end 
 
-structure tttShow :> SHOW = struct
+structure tttShow : SHOW = struct
 
   structure S = tttState
   structure CS = cellShow
@@ -245,7 +245,7 @@ end
 structure tttEval = Eval(tttState)
 
 (************************* TicTacToe Parse *************************************)
-structure tttParse :> PARSE = struct
+structure tttParse : PARSE = struct
   structure A = tttAction
   structure S = tttState
 
@@ -279,7 +279,7 @@ structure tttParse :> PARSE = struct
 
 end
 
-structure tttValidate :> VALIDATE = struct
+structure tttValidate : VALIDATE = struct
 
   structure A = tttAction
   structure S = tttState
@@ -303,13 +303,26 @@ structure tttValidate :> VALIDATE = struct
 end
 
 (************************* TicTacToe Main **************************************)
-(* structure Main = struct *)
+structure Main = struct
 
-(*    (* structs  *) *)
-(*   structure S = tttState *)
-(*   structure A = tttAction *)
-(*   structure Ag = tttAgent *)
-(*   structure Sh = tttShow *)
-(*   structure P = tttParse *)
-(*   structure E = tttEval *)
-(*   structure V = tttValidate *)
+   (* structs  *)
+  structure S = tttState
+  structure A = tttAction
+  structure Ag = tttAgents
+  structure Sh = tttShow
+  structure P = tttParse
+  structure E = tttEval
+  structure V = tttValidate
+  structure I = tttIO
+
+  val board = S.init (3, 3) S.Empty
+
+  (* 1. Print board 2. input action 3. Execute Action 4. return state *)
+  fun turn board agent = Sh.show board
+
+  fun inputAndValidate board =
+    case I.read 0
+     of NONE   => NONE
+      | SOME i => maybe NONE ((flip V.validate) board) (P.parse i) 
+
+end
