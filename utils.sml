@@ -18,3 +18,6 @@ fun maybe (default : 'b) (f : 'a -> 'b) (SOME exp) = f exp
 fun fst (x, y) = x
 fun snd (x, y) = y
                      
+fun fst3  (x, y, z) = x
+fun snd3  (x, y, z) = y
+fun thrd3 (x, y, z) = z
