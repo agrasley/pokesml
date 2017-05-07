@@ -10,6 +10,7 @@ sig
 
     val print : S.a -> unit
     val read : 'a -> string option
+    val say : string -> unit
 end
 
 functor Io (structure Sh : SHOW) : IO =
@@ -23,6 +24,8 @@ struct
 
   (* function to get user input, it doesn't do anything with its argument *)
   fun read _ = TextIO.inputLine TextIO.stdIn
+
+  fun say str = TextIO.output (TextIO.stdOut, str)
 
 end
 
