@@ -21,3 +21,6 @@ fun snd (x, y) = y
 fun fst3  (x, y, z) = x
 fun snd3  (x, y, z) = y
 fun thrd3 (x, y, z) = z
+
+fun or false false = false
+  | or _     _     = true
