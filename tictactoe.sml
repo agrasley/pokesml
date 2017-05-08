@@ -11,7 +11,7 @@ sig
     type 'a matrix = 'a row col
     exception OutOfBounds
 
-    (* doing it this way led to a bunch of typy synonym errors like this *)
+    (* doing it with type synonyms led to a bunch of typy synonym errors between structures like this *)
     (*/tmp/emacs-region726BiT:233.8-235.58 Error: case object and rules don't agree [tycon mismatch] *)
     (* rule domain: index option *)
     (* object: int option *)
@@ -117,9 +117,9 @@ struct
 
   fun getDiagL mat =
     let val cnt = 0 in
-        let fun helper i m = (case (isEmpty m) of
-                                  true => []
-                                | false => lookup (i, i) m :: helper (i + 1) m)
+        let fun helper i m = if (i < rowLength m) 
+                             then lookup (i, i) m :: helper (i + 1) m
+                             else []
         in Vector.fromList $ helper cnt mat
         end
     end
@@ -244,9 +244,6 @@ structure tttParse : PARSE = struct
   structure A = tttAction
   structure S = tttState
 
-  (* This is needed for the parse, I don't think it should be in the sig *)
-  (* open tttState *)
-
   fun parseDigit x = Int.fromString x
 
   (* this is really just a blind tokenize *)
@@ -339,8 +336,7 @@ structure Main = struct
   fun winConditions board = List.map (fn f => Vector.toList $ f board)
                                      [ S.getRow 0, S.getRow 1, S.getRow 2
                                      , S.getCol 0, S.getCol 1, S.getCol 2
-                                     (* bug in diags  *)
-                                     (* , S.getDiagL, S.getDiagR *)
+                                     , S.getDiagL, S.getDiagR
                                      ]
 
   fun isTerminal board =
