@@ -18,15 +18,14 @@ struct
 
   structure S = Sh
 
-  (* fun print x = let val str = S.show x *)
-  (*              in TextIO.output (TextIO.stdOut, str) *)
-  (*              end *)
-  fun printIO x = print $ S.show x
+  fun appendNewLine str = implode $ (explode str) @ [#"\n"]
+
+  fun printIO x = print o appendNewLine o S.show $ x
 
   (* function to get user input, it doesn't do anything with its argument *)
   fun read _ = TextIO.inputLine TextIO.stdIn
 
-  fun say str = TextIO.output (TextIO.stdOut, str)
+  fun say str = print o appendNewLine $ str
 
 end
 
@@ -43,10 +42,14 @@ sig
 
 end
 
-(* signature CONTROLLER = *)
-(* sig *)
-(*     (* type that we are parsing to *) *)
-(*     type result *)
+functor Eval (Sh : STATE) : EVAL =
+struct
+  structure S = Sh
+
+  type expr = S.effect
+
+  fun eval x = S.tranFunc x
+end
 
 signature PARSE =
 sig
