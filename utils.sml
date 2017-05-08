@@ -1,6 +1,6 @@
 (* Haskell's ($) operator because why not just fix SMLs syntax? *)
-fun (f : ('a -> 'b)) $ (x : 'a) = f x
 infix 3 $
+fun (f : ('a -> 'b)) $ (x : 'a) = f x
 
 (* curry and uncurry because sml seems to prefer tuples for some reason *)
 val curry = fn f => fn x => fn y => f (x, y)
@@ -17,10 +17,13 @@ fun maybe (default : 'b) (f : 'a -> 'b) (SOME exp) = f exp
 (* tuple helpers *)
 fun fst (x, y) = x
 fun snd (x, y) = y
-                     
+
 fun fst3  (x, y, z) = x
 fun snd3  (x, y, z) = y
 fun thrd3 (x, y, z) = z
 
 fun or false false = false
   | or _     _     = true
+
+infix 1 >>
+fun (a : 'a) >> (x : 'b)  = (a; x)
