@@ -279,14 +279,17 @@ structure tttValidate : VALIDATE = struct
   (* Takes it off!!! It hurtses us!! *)
   fun validate (A.State.Place (S.X, x, y)) mat =
     if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
+       andalso (S.Empty = S.lookup (x, y) mat)
     then SOME o A.State.Place $ (S.X, x, y)
     else NONE
     | validate (A.State.Place (S.O, x, y)) mat =
       if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
+         andalso (S.Empty = S.lookup (x, y) mat)
       then SOME o A.State.Place $ (S.O, x, y)
       else NONE
     | validate (A.State.Place (S.Empty, x, y)) mat =
       if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
+         andalso (S.Empty = S.lookup (x, y) mat)
       then SOME o A.State.Place $ (S.Empty, x, y)
       else NONE
 
@@ -300,8 +303,6 @@ structure Main = struct
    (* structs  *)
   structure S = tttState
   structure A = tttAction
-  structure Ag = tttAgents
-  structure Sh = tttShow
   structure P = tttParse
   structure E = tttEval
   structure V = tttValidate
@@ -311,12 +312,10 @@ structure Main = struct
 
   (* 1. Print board 2. input action 3. Execute Action 4. return state *)
   (* Write out the main then abstraction into a signature *)
-  fun turn board agent = Sh.show board
-
   fun inputAndValidate board =
     case I.read 0
      of NONE   => NONE
-      | SOME i => maybe NONE ((flip V.validate) board) (P.parse i) 
+      | SOME i => maybe NONE ((flip V.validate) board) (P.parse i)
 
 
   fun actionToEffect ((A.State.Place (A.State.Empty, i, j)) : A.action) : S.effect =
@@ -328,7 +327,7 @@ structure Main = struct
 
   fun listCompare [] []           = true
     | listCompare (x::xs) (y::ys) = (x = y) andalso listCompare xs ys
-    | listCompare _       _       = false 
+    | listCompare _       _       = false
 
   val xWins = List.tabulate (3, fn _ => S.X)
   val oWins = List.tabulate (3, fn _ => S.O)
@@ -347,11 +346,11 @@ structure Main = struct
     end
 
   fun driver board =
-    (case I.printIO board >> isTerminal board
+    (case I.say "Board: " >> I.printIO board >> isTerminal board
       of (* TODO figure out winner *)
          true => I.say "Game Over!"
-       | false => (case inputAndValidate board
-                    of NONE     =>  driver board >> I.say V.notValidMessage
+       | false => (case I.say "Please make a move: " >> inputAndValidate board
+                    of NONE     =>  I.say V.notValidMessage >> driver board 
                      | SOME move => let val newBoard = execAction move board
                                     in driver newBoard
                                     end))
