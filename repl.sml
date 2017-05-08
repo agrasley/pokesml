@@ -18,6 +18,7 @@ struct
 
   structure S = Sh
 
+  (* append a new line to a str, this is expensive *)
   fun appendNewLine str = implode $ (explode str) @ [#"\n"]
 
   fun printIO x = print o appendNewLine o S.show $ x
