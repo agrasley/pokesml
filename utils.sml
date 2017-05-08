@@ -22,8 +22,13 @@ fun fst3  (x, y, z) = x
 fun snd3  (x, y, z) = y
 fun thrd3 (x, y, z) = z
 
+(* a better logical or, one that can be folded/mapped! *)
 fun or false false = false
   | or _     _     = true
 
+(* haskell style sequencing, useful for IO *)
 infix 1 >>
 fun (a : 'a) >> (x : 'b)  = (a; x)
+
+(* append a new line to a str, this is expensive *)
+fun appendNewLine str = implode $ (explode str) @ [#"\n"]
