@@ -8,7 +8,7 @@ signature IO =
 sig
     structure S : SHOW
 
-    val print : S.a -> unit
+    val printIO : S.a -> unit
     val read : 'a -> string option
     val say : string -> unit
 end
@@ -18,9 +18,10 @@ struct
 
   structure S = Sh
 
-  fun print x = let val str = S.show x
-               in TextIO.output (TextIO.stdOut, str)
-               end
+  (* fun print x = let val str = S.show x *)
+  (*              in TextIO.output (TextIO.stdOut, str) *)
+  (*              end *)
+  fun printIO x = print $ S.show x
 
   (* function to get user input, it doesn't do anything with its argument *)
   fun read _ = TextIO.inputLine TextIO.stdIn
