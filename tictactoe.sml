@@ -84,11 +84,11 @@ struct
 
   fun filter f = foldr (fn x => fn xs => if f x then x::xs else xs) []
 
-  (**************************** Misc *******************************************)
-  fun isEmpty m = Vector.all (fn x => length x = 0) m
-
   (**************************** Destructors ************************************)
   fun toList mat = Vector.toList $ Vector.map (Vector.toList) mat
+
+  (**************************** Misc *******************************************)
+  fun isEmpty m = (fn x => 0 = x) o List.length o List.concat o toList $ m
 
   (***************************** Setters ***************************************)
   fun replace (i, j) elem matrix =
@@ -234,7 +234,7 @@ end
 structure tttIO = Io(structure Sh = tttShow)
 
 (************************* TicTacToe Eval **************************************)
-functor tttEval (Sh : STATE) :> EVAL = struct
+functor Eval (Sh : STATE) : EVAL = struct
   structure S = Sh
 
   type expr = S.effect
@@ -318,6 +318,7 @@ structure Main = struct
   val board = S.init (3, 3) S.Empty
 
   (* 1. Print board 2. input action 3. Execute Action 4. return state *)
+  (* Write out the main then abstraction into a signature *)
   fun turn board agent = Sh.show board
 
   fun inputAndValidate board =
@@ -325,4 +326,32 @@ structure Main = struct
      of NONE   => NONE
       | SOME i => maybe NONE ((flip V.validate) board) (P.parse i) 
 
+
+  fun actionToEffect ((A.State.Place (A.State.Empty, i, j)) : A.action) : S.effect =
+    S.Place (S.Empty, i, j)
+    | actionToEffect (A.State.Place (A.State.X, i, j)) =  S.Place (S.X, i, j)
+    | actionToEffect (A.State.Place (A.State.O, i, j)) =  S.Place (S.O, i, j)
+                                                                    
+  fun execAction action = E.eval $ actionToEffect action
+
+  fun listCompare [] []           = true
+    | listCompare (x::xs) (y::ys) = x = y andalso listCompare xs ys
+    | listCompare _       _       = false 
+
+  val xWins = List.tabulate (3, fn _ => S.X)
+  val oWins = List.tabulate (3, fn _ => S.O)
+
+  fun winConditions board = List.map (fn f => Vector.toList $ f board)
+                                     [ S.getRow 0, S.getRow 1, S.getRow 2
+                                     , S.getCol 0, S.getCol 1, S.getCol 2
+                                     (* bug in diags  *)
+                                     (* , S.getDiagL, S.getDiagR *)
+                                     ]
+
+  fun isTerminal board =
+    let val result = winConditions board
+    in foldl (uncurry or) false $ map (listCompare xWins) result orelse
+       foldl (uncurry or) false $ map (listCompare oWins) result
+    end
+                            
 end
