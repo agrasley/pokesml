@@ -234,14 +234,6 @@ end
 structure tttIO = Io(structure Sh = tttShow)
 
 (************************* TicTacToe Eval **************************************)
-functor Eval (Sh : STATE) : EVAL = struct
-  structure S = Sh
-
-  type expr = S.effect
-
-  fun eval x = S.tranFunc x
-end
-
 structure tttEval = Eval(tttState)
 
 (************************* TicTacToe Parse *************************************)
@@ -355,11 +347,11 @@ structure Main = struct
     end
 
   fun driver board =
-    (case (I.printIO board; isTerminal board)
+    (case I.printIO board >> isTerminal board
       of (* TODO figure out winner *)
          true => I.say "Game Over!"
        | false => (case inputAndValidate board
-                    of NONE     =>  (driver board; I.say V.notValidMessage)
+                    of NONE     =>  driver board >> I.say V.notValidMessage
                      | SOME move => let val newBoard = execAction move board
                                     in driver newBoard
                                     end))
