@@ -227,7 +227,10 @@ structure tttShow : SHOW = struct
   type a = S.state
 
   (* This will need to be changed for pretty printing *)
-  fun show mat = String.concat o List.concat o S.toList o S.mapElem CS.show $ mat
+  fun toStrList mat = S.toList o S.mapElem CS.show $ mat
+
+  fun show mat =
+    String.concat o List.concat o map (fn str => str @ ["\n"]) $ toStrList mat
 
 end
 
@@ -256,15 +259,16 @@ structure tttParse : PARSE = struct
   fun shitParse (str) =
     (case explode str
       of nil => NONE
-       | (x::xs) => (case Char.toString x
-                              (* a code smell indeed *)
-                      of "X" => (case parseHelper $ map Char.toString xs
-                                  of (x::y::xs) => SOME o A.State.Place $ (S.X, x, y)
-                                  |  _          => NONE)
-                       | "O" => (case parseHelper $ map Char.toString xs
-                                  of (x::y::xs) => SOME o A.State.Place $ (S.O, x, y)
-                                  |  _          => NONE)
-                       | _  => NONE))
+       | (x::xs) =>
+         (case Char.toString x
+                             (* a code smell indeed *)
+           of "X" => (case parseHelper $ map Char.toString xs
+                       of (x::y::xs) => SOME o A.State.Place $ (S.X, x, y)
+                       |  _          => NONE)
+            | "O" => (case parseHelper $ map Char.toString xs
+                       of (x::y::xs) => SOME o A.State.Place $ (S.O, x, y)
+                       |  _          => NONE)
+            | _  => NONE))
 
   (* A useful reminder to how much the parse could improve *)
   fun parse str = shitParse str
