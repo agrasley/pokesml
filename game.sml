@@ -17,17 +17,17 @@ end
 
 signature ACTION = sig
     (* module that defines an action *)
-    structure State : STATE
+    structure S : STATE
 
     (* datatype that defines what an action is *)
     type action
 
     (* Function takes a state, and generates all possible actions for that state *)
-    val posAction : State.state -> action list
+    val posAction : S.state -> action list
 
     (* Function takes an action, and a state and generates a list of effects on
     that state *)
-    val applyAction : action * State.state -> State.effect list * State.state
+    val applyAction : action * S.state -> S.effect list * S.state
 end
 
 signature AGENT = sig
@@ -42,8 +42,8 @@ signature AGENT = sig
     (* defines the behavior of an agent, given a list of actions, the agent
     function will select an action to take *)
     (*val agentFun : (Action.action list -> Action.State.state -> Action.action) -> Action.action list -> Action.State.state -> Action.action*)
-    type agentFun = Action.action list -> Action.State.state
-                    -> Action.action * Action.State.state
+    type agentFun = Action.action list -> Action.S.state
+                    -> Action.action * Action.S.state
 
     val agents : agentFun list
 end

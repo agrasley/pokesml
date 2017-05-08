@@ -30,5 +30,3 @@ fun or false false = false
 infix 1 >>
 fun (a : 'a) >> (x : 'b)  = (a; x)
 
-(* append a new line to a str, this is expensive *)
-fun appendNewLine str = implode $ (explode str) @ [#"\n"]

@@ -160,10 +160,10 @@ end
 structure tttAction = struct
 
   (* tttState is still of type : STATE, but is enriched *)
-  structure State = tttState
+  structure S = tttState
 
   (* An action is the same as an effect for tic tac toe *)
-  type action = State.effect
+  type action = S.effect
 
   (* this will be slow, optimize later by implementing zip in terms of foldr *)
   fun enumerateList xs =
@@ -178,9 +178,9 @@ structure tttAction = struct
      enumerate functions *)
   fun repair xs = map (fn (i, ys) => map (fn (j, elem) => (elem, i, j)) ys) xs
 
-  fun posAction (st : State.state) =
-    List.map State.Place o List.filter (State.isEmpty o fst3) o
-    List.concat o repair o enumNestedList o State.toList $ st
+  fun posAction (st : S.state) =
+    List.map S.Place o List.filter (S.isEmpty o fst3) o
+    List.concat o repair o enumNestedList o S.toList $ st
 
   fun applyAction (a, st) = ([a], st)
 
@@ -191,8 +191,8 @@ struct
 
   structure Action = A
 
-  type agentFun = Action.action list -> Action.State.state
-                  -> Action.action * Action.State.state
+  type agentFun = Action.action list -> Action.S.state
+                  -> Action.action * Action.S.state
 
   (* A function to make agentFunctions given some HOF *)
   fun agentFunGen f xs st = (f xs, st)
@@ -242,7 +242,6 @@ structure tttEval = Eval(tttState)
 (************************* TicTacToe Parse *************************************)
 structure tttParse : PARSE = struct
   structure A = tttAction
-  structure S = tttState
 
   fun parseDigit x = Int.fromString x
 
@@ -260,10 +259,10 @@ structure tttParse : PARSE = struct
          (case Char.toString x
                              (* a code smell indeed *)
            of "X" => (case parseHelper $ map Char.toString xs
-                       of (x::y::xs) => SOME o A.State.Place $ (S.X, x, y)
+                       of (x::y::xs) => SOME o A.S.Place $ (A.S.X, x, y)
                        |  _          => NONE)
             | "O" => (case parseHelper $ map Char.toString xs
-                       of (x::y::xs) => SOME o A.State.Place $ (S.O, x, y)
+                       of (x::y::xs) => SOME o A.S.Place $ (A.S.O, x, y)
                        |  _          => NONE)
             | _  => NONE))
 
@@ -278,20 +277,20 @@ structure tttValidate : VALIDATE = struct
   structure S = tttState
 
   (* Takes it off!!! It hurtses us!! *)
-  fun validate (A.State.Place (S.X, x, y)) mat =
-    if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
-       andalso (S.Empty = S.lookup (x, y) mat)
-    then SOME o A.State.Place $ (S.X, x, y)
+  fun validate (A.S.Place (A.S.X, x, y)) mat =
+    if (x <= (fst $ A.S.dimensions mat)) andalso (y <= (snd $ A.S.dimensions mat))
+       andalso (A.S.Empty = A.S.lookup (x, y) mat)
+    then SOME o A.S.Place $ (S.X, x, y)
     else NONE
-    | validate (A.State.Place (S.O, x, y)) mat =
-      if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
-         andalso (S.Empty = S.lookup (x, y) mat)
-      then SOME o A.State.Place $ (S.O, x, y)
+    | validate (A.S.Place (A.S.O, x, y)) mat =
+      if (x <= (fst $ A.S.dimensions mat)) andalso (y <= (snd $ A.S.dimensions mat))
+         andalso (A.S.Empty = A.S.lookup (x, y) mat)
+      then SOME o A.S.Place $ (A.S.O, x, y)
       else NONE
-    | validate (A.State.Place (S.Empty, x, y)) mat =
-      if (x <= (fst $ S.dimensions mat)) andalso (y <= (snd $ S.dimensions mat))
-         andalso (S.Empty = S.lookup (x, y) mat)
-      then SOME o A.State.Place $ (S.Empty, x, y)
+    | validate (A.S.Place (A.S.Empty, x, y)) mat =
+      if (x <= (fst $ A.S.dimensions mat)) andalso (y <= (snd $ A.S.dimensions mat))
+         andalso (A.S.Empty = A.S.lookup (x, y) mat)
+      then SOME o A.S.Place $ (A.S.Empty, x, y)
       else NONE
 
 
@@ -302,14 +301,13 @@ end
 structure Main = struct
 
    (* structs  *)
-  structure S = tttState
   structure A = tttAction
   structure P = tttParse
   structure E = tttEval
   structure V = tttValidate
   structure I = tttIO
 
-  val board = S.init (3, 3) S.Empty
+  val board = A.S.init (3, 3) A.S.Empty
 
   (* 1. Print board 2. input action 3. Execute Action 4. return state *)
   (* Write out the main then abstraction into a signature *)
@@ -318,25 +316,20 @@ structure Main = struct
      of NONE   => NONE
       | SOME i => maybe NONE ((flip V.validate) board) (P.parse i)
 
-
-  fun actionToEffect ((A.State.Place (A.State.Empty, i, j)) : A.action) : S.effect =
-    S.Place (S.Empty, i, j)
-    | actionToEffect (A.State.Place (A.State.X, i, j)) =  S.Place (S.X, i, j)
-    | actionToEffect (A.State.Place (A.State.O, i, j)) =  S.Place (S.O, i, j)
-
-  fun execAction action = E.eval $ actionToEffect action
+  (* fun execAction action = E.eval $ actionToEffect action *)
+  fun execAction action = E.eval action
 
   fun listCompare [] []           = true
     | listCompare (x::xs) (y::ys) = (x = y) andalso listCompare xs ys
     | listCompare _       _       = false
 
-  val xWins = List.tabulate (3, fn _ => S.X)
-  val oWins = List.tabulate (3, fn _ => S.O)
+  val xWins = List.tabulate (3, fn _ => A.S.X)
+  val oWins = List.tabulate (3, fn _ => A.S.O)
 
   fun winConditions board = List.map (fn f => Vector.toList $ f board)
-                                     [ S.getRow 0, S.getRow 1, S.getRow 2
-                                     , S.getCol 0, S.getCol 1, S.getCol 2
-                                     , S.getDiagL, S.getDiagR
+                                     [ A.S.getRow 0, A.S.getRow 1, A.S.getRow 2
+                                     , A.S.getCol 0, A.S.getCol 1, A.S.getCol 2
+                                     , A.S.getDiagL, A.S.getDiagR
                                      ]
 
   fun isTerminal board =
