@@ -335,7 +335,7 @@ structure Main = struct
   fun execAction action = E.eval $ actionToEffect action
 
   fun listCompare [] []           = true
-    | listCompare (x::xs) (y::ys) = x = y andalso listCompare xs ys
+    | listCompare (x::xs) (y::ys) = (x = y) andalso listCompare xs ys
     | listCompare _       _       = false 
 
   val xWins = List.tabulate (3, fn _ => S.X)
@@ -354,4 +354,17 @@ structure Main = struct
        foldl (uncurry or) false $ map (listCompare oWins) result
     end
                             
+  fun driver board =
+    (case (fn _ => isTerminal board) $ I.print board
+      of (* TODO figure out winner *)
+         true => I.say "Game Over!"
+       | false => (case inputAndValidate board
+                    of NONE     => (fn _ => driver board) $ I.say V.notValidMessage
+                     | SOME move => let val newBoard = execAction move board
+                                    in driver newBoard
+                                    end))
+
+  (* sml will never finish compiling if this is not commented.
+   I want my lazy eval back! *)
+  (* val main = driver board *)
 end
