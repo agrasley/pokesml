@@ -213,7 +213,7 @@ structure cellShow : SHOW = struct
 
   type a = S.cell
 
-  fun show S.Empty = " "
+  fun show S.Empty = "_"
     | show S.X     = "X"
     | show S.O     = "O"
 
@@ -331,7 +331,7 @@ structure Main = struct
     S.Place (S.Empty, i, j)
     | actionToEffect (A.State.Place (A.State.X, i, j)) =  S.Place (S.X, i, j)
     | actionToEffect (A.State.Place (A.State.O, i, j)) =  S.Place (S.O, i, j)
-                                                                    
+
   fun execAction action = E.eval $ actionToEffect action
 
   fun listCompare [] []           = true
@@ -353,18 +353,15 @@ structure Main = struct
     in foldl (uncurry or) false $ map (listCompare xWins) result orelse
        foldl (uncurry or) false $ map (listCompare oWins) result
     end
-                            
+
   fun driver board =
-    (case (fn _ => isTerminal board) $ I.print board
+    (case (I.printIO board; isTerminal board)
       of (* TODO figure out winner *)
          true => I.say "Game Over!"
        | false => (case inputAndValidate board
-                    of NONE     => (fn _ => driver board) $ I.say V.notValidMessage
+                    of NONE     =>  (driver board; I.say V.notValidMessage)
                      | SOME move => let val newBoard = execAction move board
                                     in driver newBoard
                                     end))
 
-  (* sml will never finish compiling if this is not commented.
-   I want my lazy eval back! *)
-  (* val main = driver board *)
 end
