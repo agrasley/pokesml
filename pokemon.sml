@@ -1,50 +1,38 @@
-signature POKEMON = sig
+structure PokemonState = struct
 
-    (* Basic data types to describe a pokemon *)
-    type pokemon
-    type moves
-    type pokeType
-    type stats
+  type pokeState = {maxHp: int, hp: int, moves: move list, status: status}
 
-    (* Getters *)
-    val getMoves     : pokemon -> moves
-    val getType      : pokemon -> pokeType
-    val getStats     : pokemon -> stats
-    val getLevel     : pokemon -> int
-    val getAttack    : pokemon -> int
-    val getSpAttack  : pokemon -> int
-    val getDefense   : pokemon -> int
-    val getSpDefense : pokemon -> int
-    val getSpeed     : pokemon -> int
-    val getHp        : pokemon -> int
-    val getMaxHp     : pokemon -> int
-    val getEvasion   : pokemon -> real
-    val getAccuracy  : pokemon -> real
+  datatype turn = First | Second
 
-    (* Setters *)
-    val setMoves     : pokemon -> moves -> pokemon
-    val setType      : pokemon -> pokeType -> pokemon
-    val setStats     : pokemon -> stats -> pokemon
-    val setLevel     : pokemon -> int -> pokemon
-    val setAttack    : pokemon -> int -> pokemon
-    val setSpAttack  : pokemon -> int -> pokemon
-    val setDefense   : pokemon -> int -> pokemon
-    val setSpDefense : pokemon -> int -> pokemon
-    val setSpeed     : pokemon -> int -> pokemon
-    val setHp        : pokemon -> int -> pokemon
-    val setMaxHp     : pokemon -> int -> pokemon
-    val setEvasion   : pokemon -> real -> pokemon
-    val setAccuracy  : pokemon -> real -> pokemon
+  type state = {whoseTurn: turn, pkmn1: pokeState, pkmn2: pokeState}
+
+  datatype status = None | Sleep
+
+  datatype move = Attack {name: string, power: int, pType: pokeType, acc: real}
+                | Status {name: string, effects: effect list}
+
+  datatype target = Opponent | Self
+
+  datatype effect = Damage of target * int
+                  | Heal of target * int
+                  | Sleep of target
+                  | EndTurn
+
+  fun damagePkmn i {maxHp=mhp, hp=ohp, moves=m, status=s} = if ohp - i < 0 then
+                                                              {maxHp=mhp, hp=0, moves=m, status=s}
+                                                            else {maxHp=mhp, hp=ohp - i, moves=m, status=s}
+
+  fun updateStatus s {maxHp=mhp, hp=h, moves=m, status=_} = {maxHp=mhp, hp=h, moves=m, status=s}
+
+  fun healPkmn i {maxHp=mhp, hp=ohp, moves=m, status=s} = if ohp + i > mhp then
+                                                            {maxHp=mhp, hp=mhp, moves=m, status=s}
+                                                          else {maxHp=mhp, hp=ohp + i, moves=m, status=s}
+
+  fun tranFunc (Damage Self i) st = case (#whoseTurn st) of
+                                      First =>
+
 end
 
-(* functor genPokemon (Args : sig *)
-(*                      val p : STRING *)
-(*                      structure M : MOVES *)
-(*                      structure T : POKETYPE *)
-(*                      structure S : STATS *)
-(*                  end) : POKEMON = *)
-(*   struct *)
-(*     type pokemon = p *)
+structure PokemonAction = struct
 
-(*     (* Getters *) *)
-(*     fun getMoves  *)
+  structure State = PokemonState

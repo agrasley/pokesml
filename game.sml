@@ -27,7 +27,7 @@ signature ACTION = sig
 
     (* Function takes an action, and a state and generates a list of effects on
     that state *)
-    val applyAction : action * State.state -> State.effect list * State.state
+    val applyAction : action * State.state -> State.effect list
 end
 
 signature AGENT = sig
@@ -48,6 +48,7 @@ signature AGENT = sig
     val agents : agentFun list
 end
 
+(*
 (* Functors *)
 (* This will return a struct, we still need a signature *)
 functor Exec (A:AGENT) =
@@ -60,3 +61,4 @@ struct
           (* Top level threading order *)
           (* posAction -> agentFun -> applyAction -> tranFunc -> Loop *)
   end
+*)
