@@ -11,6 +11,8 @@ signature CONTAINER = sig
   val size : 'a container -> size
   val tabulate : size * (index -> 'a) -> 'a container
   val init : size * 'a -> 'a container
+  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
 
 end
 
@@ -25,13 +27,14 @@ signature VECT = sig
   val size : 'a container -> size
   val tabulate : size * (index -> 'a) -> 'a container
   val init : size * 'a -> 'a container
+  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
 
 end
 
 signature SQUAREMATRIX = sig
 
-  type 'a matrix
-  type 'a container = 'a matrix
+  type 'a container
   type index
   type size = int
 
@@ -40,7 +43,8 @@ signature SQUAREMATRIX = sig
   val size : 'a container -> size
   val init : size * 'a -> 'a container
   val tabulate : size * (index -> 'a) -> 'a container
-  val diags : 'a container -> 'a list list
+  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
 
 end
 
@@ -56,59 +60,45 @@ signature SQUARE2DMATRIX = sig
   val size : 'a container -> size
   val init : size * 'a -> 'a container
   val tabulate : size * (index -> 'a) -> 'a container
-  val diags : 'a container -> 'a list list
+  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
 
 end
 
-functor Square2DMatrixFn (V : VECT) : SQUARE2DMATRIX =
+functor SquareMatrixFn (structure V : VECT; structure M : SQUAREMATRIX) : SQUAREMATRIX =
   struct
 
-  type 'a matrix = 'a V.container V.container
-  type 'a container = 'a matrix
-  type index = (int * int)
+  type 'a container = 'a V.container M.container
+  type index = M.index * V.index
   type size = int
 
   fun index (xs, (i, j)) =
-    let val x = V.index (xs, i)
+    let val x = M.index (xs, i)
     in V.index (x, j)
     end
 
   fun update (matrix,(i, j), elem) =
-    let val newrow = V.update (V.index (matrix, i), j, elem)
-    in V.update (matrix, i, newrow)
+    let val newrow = V.update (M.index (matrix, i), j, elem)
+    in M.update (matrix, i, newrow)
     end
 
-  fun size mat = V.size mat
+  fun size mat = M.size mat
 
   fun init (i, seed) =
     let fun mkRow _ = V.init (i, seed)
-    in V.tabulate (i, mkRow)
+    in M.tabulate (i, mkRow)
     end
 
   fun tabulate (i, f) =
     let fun mkRow j = V.tabulate (i, fn k => f (j,k))
-    in V.tabulate (i, mkRow)
+    in M.tabulate (i, mkRow)
     end
 
-  fun getDiagL mat =
-    let val cnt = 0 in
-        let fun helper i m = if (i < size m)
-                             then index (m, (i, i)) :: helper (i + 1) m
-                             else []
-        in helper cnt mat
-        end
-    end
+  fun foldr f acc mat =
+    M.foldr (fn (x, xs) => V.foldr f xs x) acc mat
 
-  fun getDiagR mat =
-    let val cnt = (0, size mat) in
-      let fun helper (i,j) m = if (i < size m)
-                           then index (m, (i, j)) :: helper (i+1,j-1) m
-                           else []
-      in helper cnt mat
-      end
-    end
-
-  fun diags mat = [getDiagL mat, getDiagR mat]
+  fun foldl f acc mat =
+    M.foldl (fn (x, xs) => V.foldl f xs x) acc mat
 
   end
 
@@ -160,9 +150,14 @@ struct
   val size = Array.length
   val tabulate = Array.tabulate
   val init = Array.array
+  val foldl = Array.foldl
+  val foldr = Array.foldr
 
 end
 
-structure VectorMatrix = Square2DMatrixFn(VectorVect)
-structure ListMatrix = Square2DMatrixFn(ListVect)
-structure ArrayMatrix = Square2DMatrixFn(ArrayVect)
+structure VectorMatrix = SquareMatrixFn(structure V = VectorVect; structure M = VectorVect)
+structure ListMatrix = SquareMatrixFn(structure V = ListVect; structure M = ListVect)
+structure ArrayMatrix = SquareMatrixFn(structure V = ArrayVect; structure M = ArrayVect)
+structure Vector3DMatrix = SquareMatrixFn(structure V = VectorVect; structure M = VectorMatrix)
+structure List3DMatrix = SquareMatrixFn(structure V = ListVect; structure M = ListMatrix)
+structure Array3DMatrix = SquareMatrixFn(structure V = ArrayVect; structure M = ArrayMatrix)
