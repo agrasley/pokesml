@@ -18,50 +18,19 @@ end
 
 signature VECT = sig
 
-  type 'a container
-  type index = int
-  type size = int
-
-  val index : 'a container * index -> 'a
-  val update : 'a container * index * 'a -> 'a container
-  val size : 'a container -> size
-  val tabulate : size * (index -> 'a) -> 'a container
-  val init : size * 'a -> 'a container
-  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
-  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  include SQUAREMATRIX where type index = int
 
 end
 
 signature SQUAREMATRIX = sig
 
-  type 'a container
-  type index
-  type size = int
-
-  val index : 'a container * index -> 'a
-  val update : 'a container * index * 'a -> 'a container
-  val size : 'a container -> size
-  val init : size * 'a -> 'a container
-  val tabulate : size * (index -> 'a) -> 'a container
-  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
-  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  include CONTAINER where type size = int
 
 end
 
 signature SQUARE2DMATRIX = sig
 
-  type 'a matrix
-  type 'a container = 'a matrix
-  type index = (int * int)
-  type size = int
-
-  val index : 'a container * index -> 'a
-  val update : 'a container * index * 'a -> 'a container
-  val size : 'a container -> size
-  val init : size * 'a -> 'a container
-  val tabulate : size * (index -> 'a) -> 'a container
-  val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
-  val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  include SQUAREMATRIX where type index = int * int
 
 end
 
