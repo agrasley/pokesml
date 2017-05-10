@@ -16,15 +16,15 @@ signature CONTAINER = sig
 
 end
 
-signature VECT = sig
-
-  include SQUAREMATRIX where type index = int
-
-end
-
 signature SQUAREMATRIX = sig
 
   include CONTAINER where type size = int
+
+end
+
+signature VECT = sig
+
+  include SQUAREMATRIX where type index = int
 
 end
 
