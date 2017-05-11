@@ -1,0 +1,75 @@
+\documentclass[9pt,letterpaper]{extarticle}
+\usepackage{extsizes}
+\usepackage[paper=letterpaper,margin=1in]{geometry}
+
+% Table coloring: Must be imported before TikZ
+\usepackage[table,x11names,dvipsnames]{xcolor}
+
+\usepackage{xspace,amsmath,amsfonts,amssymb,hyperref,tikz,multirow}
+\usepackage{graphicx}
+% \graphicspath{{../data/R_plots/}}
+
+\usepackage{parskip}
+
+\newcommand{\todo}[1]{%
+	\mbox{}% prevent marginpar from being on previous paragraph
+	\marginpar{%
+		\colorbox{red!80!black}{\textcolor{white}{to-do}}%
+		\vspace*{-22pt}% hack!
+	}%
+	\textcolor{red}{#1}%
+}
+
+\usepackage{algorithmicx}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{graphicx}
+\usepackage{multicol}
+
+\title{N-dimensional Tic Tac Toe, and Adventure in Modules}
+\author{Alex Grasley \and Jeff Young \and Michael McGirr}
+\date{}
+
+\begin{document}
+	\maketitle
+	% \begin{abstract}
+  %   Do we want/need an abstract?
+	% \end{abstract}
+
+  \section{Introduction}
+  \section{Overview of Project}
+  % A high-level overview of what your project is about. This should answer the
+  % following questions: What is the domain? Who are the users? What kinds of
+  % things can those users do with your project?
+  
+  
+
+  \section{Program description}
+  % A list and brief description of all of the signatures, modules, and functors
+  % in your project. In the description of signatures and modules, you should
+  % highlight especially important types and functions. The goal of this section
+  % is to guide the reader through your source code, putting things into their
+  % proper context. It isn’t necessary to describe every helper function, but this
+  % section should provide a reasonably complete overview of the content of your
+  % project.
+
+
+
+	\section{Design Decisions}
+  % (Most important!) Describe in detail 3-5 design decisions you made during your
+  % project, with respect to abstraction and/or modularity. For example, what is a
+  % piece of information that you chose to hide and why? How did you decide on a
+  % particular way of separating your system into modules compared to another. How
+  % did you reduce coupling between two modules? These design decisions should
+  % emphasize how you applied ideas from the papers we’ve read (and associated
+  % discussions) to the design of your project. It might be helpful here to
+  % include snippets from old versions (or hypothetical alternative versions) of
+  % your project to compare and contrast with the final version.
+  \subsection{Creating an Abstract Game Engine}
+  \subsection{Higher Ordered Signatures, and the ``Include'' incantation}
+  \subsection{Separation of IO, or How I learned to not fight SML in search of Purity}
+  \subsection{You can do it in 2-dimensions, but can you do it in n-dimensions!}
+  \subsection{The Functor is love, the Functor is life}
+
+\end{document}
