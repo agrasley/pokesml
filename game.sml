@@ -11,7 +11,9 @@ signature STATE = sig
 
     (* The transition function, given a state, and an effect to apply, produces
     a new state that is the result of applying the effect to the former state *)
-    val tranFunc : effect -> state -> state
+    val tranFunc : effect * state -> state
+
+    val showState : state -> string
 
 end
 
@@ -38,17 +40,40 @@ signature AGENT = sig
     val agents : agentFun list
 end
 
-(*
-(* Functors *)
-(* This will return a struct, we still need a signature *)
-functor Exec (A:AGENT) =
-struct
-    (* fun step (s:A.Action.State.state) = let *)
-    (*     val actions = A.Action.posAction s *)
-    (*     val selection = A.agentFun actions s *)
-    (*     val effects = A.Action.applyAction selection s *)
-    (*   in *)
-          (* Top level threading order *)
-          (* posAction -> agentFun -> applyAction -> tranFunc -> Loop *)
+signature EXEC = sig
+
+  structure Agent : AGENT
+
+  val run : Agent.Action.State.state -> Agent.Action.State.state
+
+end
+
+functor ExecFn (A:AGENT) : EXEC =
+  struct
+
+  structure Agent = A
+
+  fun step (f : A.agentFun) st =
+    let
+      val action = f st
+    in
+      if A.Action.validAction (action, st) then
+        let
+          val effects = A.Action.applyAction (action, st)
+        in
+          foldl A.Action.State.tranFunc st effects
+        end
+      else (print "Invalid action.\n"; step f st)
+    end
+
+  fun runStep i st =
+    (print ("Current State:\n" ^ A.Action.State.showState st ^ "\n");
+     let
+       val newSt = step (List.nth (A.agents, i mod (List.length A.agents))) st
+     in
+       runStep (i+1) newSt
+     end)
+
+  fun run st = runStep 0 st
+
   end
-*)

@@ -17,8 +17,6 @@ signature TTTSTATE = sig
 
   val isEmpty : cell -> bool
 
-  val showState : state -> string
-
 end
 
 functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
@@ -35,8 +33,8 @@ functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
 
   type effect = Matrix.index
 
-  fun tranFunc i (X,board) = (O, Matrix.update (board,i,X))
-    | tranFunc i (O,board) = (X, Matrix.update (board,i,O))
+  fun tranFunc (i, (X,board)) = (O, Matrix.update (board,i,X))
+    | tranFunc (i, (O,board)) = (X, Matrix.update (board,i,O))
 
   fun isEmpty Empty = true
     | isEmpty _     = false
@@ -116,12 +114,15 @@ functor TttHumanAgentFn (AC : TTTACTION) : AGENT =
 
   type agentFun = Action.State.state -> Action.action
 
-  fun humanAgent _ =
+  fun humanAgent st =
     (print "Please enter the number of the cell you want to fill:\n";
     let
-      val SOME x = TextIO.inputLine TextIO.stdIn
-      val SOME y = Int.fromString x
-    in y
+      val msg = "Invalid input. Please try again.\n"
+    in case TextIO.inputLine TextIO.stdIn of
+      NONE => (print msg; humanAgent st)
+      | SOME x => case Int.fromString x of
+        NONE => (print msg; humanAgent st)
+        | SOME y => y
     end)
 
   val agents = [humanAgent, humanAgent]
@@ -130,3 +131,6 @@ functor TttHumanAgentFn (AC : TTTACTION) : AGENT =
 
 structure TttHumanAgent = TttHumanAgentFn(TttAction)
 structure TttHuman3DAgent = TttHumanAgentFn(Ttt3DAction)
+
+structure TttExecHuman = ExecFn(TttHumanAgent)
+structure TttExec3DHuman = ExecFn(TttHuman3DAgent)
