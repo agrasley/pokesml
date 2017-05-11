@@ -9,11 +9,15 @@ signature STATE = sig
     (* datatype that defines effects possible on the state *)
     type effect
 
+    type initParams
+
     (* The transition function, given a state, and an effect to apply, produces
     a new state that is the result of applying the effect to the former state *)
     val tranFunc : effect * state -> state
 
     val showState : state -> string
+
+    val init : initParams -> state
 
 end
 
@@ -44,7 +48,7 @@ signature EXEC = sig
 
   structure Agent : AGENT
 
-  val run : Agent.Action.State.state -> Agent.Action.State.state
+  val run : Agent.Action.State.initParams -> Agent.Action.State.state
 
 end
 
@@ -74,6 +78,6 @@ functor ExecFn (A:AGENT) : EXEC =
        runStep (i+1) newSt
      end)
 
-  fun run st = runStep 0 st
+  fun run i = runStep 0 (A.Action.State.init i)
 
   end

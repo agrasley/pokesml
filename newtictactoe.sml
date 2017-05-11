@@ -14,6 +14,7 @@ signature TTTSTATE = sig
   include STATE
     where type state = cell * (cell Matrix.container)
     where type effect = Matrix.index
+    where type initParams = Matrix.size
 
   val isEmpty : cell -> bool
 
@@ -32,6 +33,8 @@ functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
   type state = cell * (cell Matrix.container)
 
   type effect = Matrix.index
+
+  type initParams = Matrix.size
 
   fun tranFunc (i, (X,board)) = (O, Matrix.update (board,i,X))
     | tranFunc (i, (O,board)) = (X, Matrix.update (board,i,O))
@@ -56,6 +59,8 @@ functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
     in
       fst (Matrix.foldl f ("",0) mat)
     end
+
+  fun init i = (X,Matrix.init (i,Empty))
 
   end
 
