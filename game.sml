@@ -19,6 +19,8 @@ signature STATE = sig
 
     val init : initParams -> state
 
+    val isTerminal : state -> string option
+
 end
 
 signature ACTION = sig
@@ -48,7 +50,7 @@ signature EXEC = sig
 
   structure Agent : AGENT
 
-  val run : Agent.Action.State.initParams -> Agent.Action.State.state
+  val run : Agent.Action.State.initParams -> unit
 
 end
 
@@ -75,7 +77,10 @@ functor ExecFn (A:AGENT) : EXEC =
      let
        val newSt = step (List.nth (A.agents, i mod (List.length A.agents))) st
      in
-       runStep (i+1) newSt
+       case A.Action.State.isTerminal newSt of
+         NONE => runStep (i+1) newSt
+         | SOME msg => print
+           ("Final State:\n" ^ A.Action.State.showState newSt ^ "\n" ^ msg ^ "\n")
      end)
 
   fun run i = runStep 0 (A.Action.State.init i)

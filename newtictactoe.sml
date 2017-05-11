@@ -62,6 +62,15 @@ functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
 
   fun init i = (X,Matrix.init (i,Empty))
 
+  fun isTerminal (_,mat) =
+    let
+      val hasEmpty = Matrix.foldr (fn (x,y) => (isEmpty x) orelse y) false mat
+    in if hasEmpty then
+      NONE
+    else
+      SOME "Game over, man! Game over!"
+    end
+
   end
 
 structure TttState = TttStateFn(ArrayMatrix)
