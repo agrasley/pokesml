@@ -4,8 +4,11 @@ use "utils.sml";
 (* Generic containers of any size and dimensions *)
 signature CONTAINER = sig
 
+  (* ADT of the container *)
   type 'a container
+  (* type used to index the container *)
   type index
+  (* type used to represent the size of the container *)
   type size
 
   (* get value at an index*)

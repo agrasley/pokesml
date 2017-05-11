@@ -2,10 +2,13 @@ use "utils.sml";
 use "matrix.sml";
 use "game.sml";
 
+
+(* state of a tic tac toe game, extends STATE *)
 signature TTTSTATE = sig
 
   structure Matrix : SQUAREMATRIX
 
+  (* cells in our matrix *)
   datatype cell
     = Empty
     | X
@@ -36,6 +39,7 @@ functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
 
   type initParams = Matrix.size
 
+  (* switch turns and place a cell *)
   fun tranFunc (i, (X,board)) = (O, Matrix.update (board,i,X))
     | tranFunc (i, (O,board)) = (X, Matrix.update (board,i,O))
 
@@ -60,8 +64,10 @@ functor TttStateFn (M : SQUAREMATRIX) : TTTSTATE =
       fst (Matrix.foldl f ("",0) mat)
     end
 
+  (* make an empty board given a boardsize i *)
   fun init i = (X,Matrix.init (i,Empty))
 
+  (* is the board full? *)
   fun isTerminal (_,mat) =
     let
       val hasEmpty = Matrix.foldr (fn (x,y) => (isEmpty x) orelse y) false mat
@@ -90,10 +96,13 @@ functor TttActionFn (ST : TTTSTATE) : TTTACTION =
 
   structure State = ST
 
+  (* actions are ints that get turned into indices *)
   type action = int
 
+  (* take an int and turn it into a singleton list of the corresponding matrix index *)
   fun applyAction (i, (_,mat)) = [State.Matrix.intToIndex (mat, i)]
 
+  (* is the cell empty you're trying to fill? *)
   fun validAction (i, (_,mat)) =
     State.isEmpty (State.Matrix.index (mat, State.Matrix.intToIndex (mat, i)))
 
@@ -102,6 +111,7 @@ functor TttActionFn (ST : TTTSTATE) : TTTACTION =
 structure TttAction = TttActionFn(TttState)
 structure Ttt3DAction = TttActionFn(Ttt3DState)
 
+(* makes random agents that just choose their actions at random *)
 functor TttRandomAgentFn (AC : TTTACTION) : AGENT =
   struct
 
@@ -112,6 +122,7 @@ functor TttRandomAgentFn (AC : TTTACTION) : AGENT =
   val r = Random.rand (Int.fromLarge (Time.toSeconds(Time.now()) mod 1000),Int.fromLarge (Time.toSeconds(Time.now()) mod 10000))
   val nextInt = Random.randRange (1,1000)
 
+  (* pick a random integer from 1 to 1000 regardless of state *)
   fun randomAgent _ = nextInt r
 
   val agents = [randomAgent, randomAgent]
@@ -121,6 +132,7 @@ functor TttRandomAgentFn (AC : TTTACTION) : AGENT =
 structure TttRandomAgent = TttRandomAgentFn(TttAction)
 structure TttRandom3DAgent = TttRandomAgentFn(Ttt3DAction)
 
+(* agents representing human players that interact via stdIn *)
 functor TttHumanAgentFn (AC : TTTACTION) : AGENT =
   struct
 
@@ -128,6 +140,7 @@ functor TttHumanAgentFn (AC : TTTACTION) : AGENT =
 
   type agentFun = Action.State.state -> Action.action
 
+  (* keep looping until you get an int from stdIn *)
   fun humanAgent st =
     (print "Please enter the number of the cell you want to fill:\n";
     let

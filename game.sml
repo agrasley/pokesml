@@ -1,4 +1,3 @@
-(* Signatures  *)
 signature STATE = sig
     (* module that denotes a State, defines what the state is, effects possible
     on the state and a transition function. *)
@@ -9,16 +8,20 @@ signature STATE = sig
     (* datatype that defines effects possible on the state *)
     type effect
 
+    (* type of the parameters necessary to initialize the state *)
     type initParams
 
     (* The transition function, given a state, and an effect to apply, produces
     a new state that is the result of applying the effect to the former state *)
     val tranFunc : effect * state -> state
 
+    (* turn the state into a string for printing *)
     val showState : state -> string
 
+    (* initialize the state given some parameters *)
     val init : initParams -> state
 
+    (* have we reached a terminal state, if so, return SOME message *)
     val isTerminal : state -> string option
 
 end
@@ -34,6 +37,7 @@ signature ACTION = sig
     that state *)
     val applyAction : action * State.state -> State.effect list
 
+    (* is this a valid action to take on the current state? *)
     val validAction : action * State.state -> bool
 end
 
@@ -41,19 +45,24 @@ signature AGENT = sig
     (* module that defines an agent *)
     structure Action : ACTION
 
+    (* agents are functions that take a staete and choose an action to take *)
     type agentFun = Action.State.state -> Action.action
 
+    (* value representing all the agents (players) in a game *)
     val agents : agentFun list
 end
 
 signature EXEC = sig
+  (* runs the game *)
 
   structure Agent : AGENT
 
+  (* given intialization parameters, run the game *)
   val run : Agent.Action.State.initParams -> unit
 
 end
 
+(* given an agent module, produce a module that can run the game *)
 functor ExecFn (A:AGENT) : EXEC =
   struct
 
