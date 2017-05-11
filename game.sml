@@ -17,37 +17,28 @@ end
 
 signature ACTION = sig
     (* module that defines an action *)
-    structure S : STATE
+    structure State : STATE
 
     (* datatype that defines what an action is *)
     type action
 
-    (* Function takes a state, and generates all possible actions for that state *)
-    val posAction : S.state -> action list
-
     (* Function takes an action, and a state and generates a list of effects on
     that state *)
-    val applyAction : action * S.state -> S.effect list * S.state
+    val applyAction : action * State.state -> State.effect list
+
+    val validAction : action * State.state -> bool
 end
 
 signature AGENT = sig
     (* module that defines an agent *)
     structure Action : ACTION
 
-    (* An agent should be a higher ordered function that selects an action in
-    some way *)
-    (* can we do type synonyms for functions? *)
-    (* type Agent : Action list -> Action *)
-
-    (* defines the behavior of an agent, given a list of actions, the agent
-    function will select an action to take *)
-    (*val agentFun : (Action.action list -> Action.State.state -> Action.action) -> Action.action list -> Action.State.state -> Action.action*)
-    type agentFun = Action.action list -> Action.S.state
-                    -> Action.action * Action.S.state
+    type agentFun = Action.State.state -> Action.action
 
     val agents : agentFun list
 end
 
+(*
 (* Functors *)
 (* This will return a struct, we still need a signature *)
 functor Exec (A:AGENT) =
@@ -60,3 +51,4 @@ struct
           (* Top level threading order *)
           (* posAction -> agentFun -> applyAction -> tranFunc -> Loop *)
   end
+*)

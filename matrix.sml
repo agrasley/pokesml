@@ -20,6 +20,8 @@ signature SQUAREMATRIX = sig
 
   include CONTAINER where type size = int
 
+  val intToIndex : 'a container * int -> index
+
 end
 
 signature VECT = sig
@@ -69,6 +71,15 @@ functor SquareMatrixFn (structure V : VECT; structure M : SQUAREMATRIX) : SQUARE
   fun foldl f acc mat =
     M.foldl (fn (x, xs) => V.foldl f xs x) acc mat
 
+  fun intToIndex (mat, i) =
+    let
+      val s = M.size mat
+      val j = M.intToIndex (mat, i div s)
+      val k = i mod s
+    in
+      (j,k)
+    end
+
   end
 
 structure VectorVect : VECT =
@@ -83,6 +94,7 @@ struct
   val index = sub
   val size = length
   fun init (i, seed) = tabulate (i, fn _ => seed)
+  fun intToIndex (xs, i) = i mod (size xs)
 
 end
 
@@ -105,6 +117,8 @@ struct
 
   fun init (i, seed) = tabulate (i, fn _ => seed)
 
+  fun intToIndex (xs, i) = i mod (size xs)
+
 end
 
 structure ArrayVect : VECT =
@@ -121,6 +135,8 @@ struct
   val init = Array.array
   val foldl = Array.foldl
   val foldr = Array.foldr
+
+  fun intToIndex (xs, i) = i mod (size xs)
 
 end
 
