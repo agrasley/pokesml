@@ -36,7 +36,8 @@ signature SQUARE2DMATRIX = sig
 
 end
 
-functor SquareMatrixFn (structure V : VECT; structure M : SQUAREMATRIX) : SQUAREMATRIX =
+functor SquareMatrixFn (structure V : VECT
+                        structure M : SQUAREMATRIX) : SQUAREMATRIX =
   struct
 
   type 'a container = 'a V.container M.container
@@ -140,9 +141,26 @@ struct
 
 end
 
-structure VectorMatrix = SquareMatrixFn(structure V = VectorVect; structure M = VectorVect)
-structure ListMatrix = SquareMatrixFn(structure V = ListVect; structure M = ListVect)
-structure ArrayMatrix = SquareMatrixFn(structure V = ArrayVect; structure M = ArrayVect)
-structure Vector3DMatrix = SquareMatrixFn(structure V = VectorVect; structure M = VectorMatrix)
-structure List3DMatrix = SquareMatrixFn(structure V = ListVect; structure M = ListMatrix)
-structure Array3DMatrix = SquareMatrixFn(structure V = ArrayVect; structure M = ArrayMatrix)
+structure VectorMatrix = SquareMatrixFn(
+    structure V = VectorVect
+    structure M = VectorVect)
+
+structure ListMatrix = SquareMatrixFn(
+    structure V = ListVect
+    structure M = ListVect)
+
+structure ArrayMatrix = SquareMatrixFn(
+    structure V = ArrayVect
+    structure M = ArrayVect)
+
+structure Vector3DMatrix = SquareMatrixFn(
+    structure V = VectorVect
+    structure M = VectorMatrix)
+
+structure List3DMatrix = SquareMatrixFn(
+    structure V = ListVect
+    structure M = ListMatrix)
+
+structure Array3DMatrix = SquareMatrixFn(
+    structure V = ArrayVect
+    structure M = ArrayMatrix)
