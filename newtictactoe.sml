@@ -139,3 +139,6 @@ structure TttHuman3DAgent = TttHumanAgentFn(Ttt3DAction)
 
 structure TttExecHuman = ExecFn(TttHumanAgent)
 structure TttExec3DHuman = ExecFn(TttHuman3DAgent)
+
+structure TttExecRandom = ExecFn(TttRandomAgent)
+structure TttExec3DRandom = ExecFn(TttRandom3DAgent)
