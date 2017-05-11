@@ -1,21 +1,32 @@
 use "utils.sml";
 
+
+(* Generic containers of any size and dimensions *)
 signature CONTAINER = sig
 
   type 'a container
   type index
   type size
 
+  (* get value at an index*)
   val index : 'a container * index -> 'a
+  (* update value at an index *)
   val update : 'a container * index * 'a -> 'a container
+  (* get the size of the container *)
   val size : 'a container -> size
+  (* initialize a new container using a helper function on indices *)
   val tabulate : size * (index -> 'a) -> 'a container
+  (* initialize a new container uniformly *)
   val init : size * 'a -> 'a container
+  (* left fold *)
   val foldl  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
+  (* right fold *)
   val foldr  : ('a * 'b -> 'b) -> 'b -> 'a container -> 'b
 
 end
 
+
+(* Matrices that are square and so only need size to be a single int *)
 signature SQUAREMATRIX = sig
 
   include CONTAINER where type size = int
@@ -24,18 +35,15 @@ signature SQUAREMATRIX = sig
 
 end
 
+(* 1-dimensional containers like lists or array *)
 signature VECT = sig
 
   include SQUAREMATRIX where type index = int
 
 end
 
-signature SQUARE2DMATRIX = sig
-
-  include SQUAREMATRIX where type index = int * int
-
-end
-
+(* Given a 1-dimensional container and an n-dimensional square matrix, produce a
+   new square matrix *)
 functor SquareMatrixFn (structure V : VECT
                         structure M : SQUAREMATRIX) : SQUAREMATRIX =
   struct
@@ -83,6 +91,7 @@ functor SquareMatrixFn (structure V : VECT
 
   end
 
+(* basis vector as a VECT *)
 structure VectorVect : VECT =
 struct
 
@@ -99,6 +108,7 @@ struct
 
 end
 
+(* basis list as a VECT *)
 structure ListVect : VECT =
 struct
 
@@ -122,6 +132,7 @@ struct
 
 end
 
+(* basis array as a VECT *)
 structure ArrayVect : VECT =
 struct
 
@@ -141,26 +152,37 @@ struct
 
 end
 
+(* 2D matrix of vectors *)
 structure VectorMatrix = SquareMatrixFn(
     structure V = VectorVect
     structure M = VectorVect)
 
+(* 2D matrix of lists *)
 structure ListMatrix = SquareMatrixFn(
     structure V = ListVect
     structure M = ListVect)
 
+(* 2D matrix of arrays *)
 structure ArrayMatrix = SquareMatrixFn(
     structure V = ArrayVect
     structure M = ArrayVect)
 
+(* 3D matrix of vectors *)
 structure Vector3DMatrix = SquareMatrixFn(
     structure V = VectorVect
     structure M = VectorMatrix)
 
+(* 3D matrix of lists *)
 structure List3DMatrix = SquareMatrixFn(
     structure V = ListVect
     structure M = ListMatrix)
 
+(* 3D matrix of arrays *)
 structure Array3DMatrix = SquareMatrixFn(
     structure V = ArrayVect
     structure M = ArrayMatrix)
+
+(* Mixing vectors and arrays *)
+structure MixedMatrix = SquareMatrixFn(
+    structure V = ArrayVect
+    structure M = VectorVect)
