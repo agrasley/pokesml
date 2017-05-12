@@ -37,9 +37,6 @@
   %   Do we want/need an abstract?
 	% \end{abstract}
 
-  \section{Introduction}
-
-  
   \section{Overview of Project}
   % A high-level overview of what your project is about. This should answer the
   % following questions: What is the domain? Who are the users? What kinds of
@@ -137,7 +134,10 @@
   % include snippets from old versions (or hypothetical alternative versions) of
   % your project to compare and contrast with the final version.
   \subsection{Creating an Abstract Game Engine}
+  % How we came up with the abstract design
   \subsection{Higher Ordered Signatures, and the ``Include'' incantation}
+  % Something about how previously we just had signature -> structure -> functors
+  % but with include it became possible to 
   \subsection{Separation of IO, or How I learned to not fight SML in search of Purity}
   In the first implementation of our project we simulated Haskell's IO monad by
   creating a ``show'' signature, and an ``IO'' functor, as shown below:
@@ -193,6 +193,69 @@
   system.
 
   \subsection{You can do it in 2-dimensions, but can you do it in n-dimensions!}
+  Initially, we had conceived on implementing a pokemon battle simulator. As we
+  dove into the problem domain we realized that instead of falling into a
+  specific, flow-chart design with modules like: Pokemon, Combat, Moves etc. it
+  would be better design to create an abstract game engine and then make pokemon
+  \textit{an instance of} the abstract game engine. A similar pattern occurred
+  during our first implementation of the matrix library utilized by the tic tac
+  toe state viz. we realized we wrote a, too specific, flowchart-y instance of a
+  matrix library. Thus, in the spirit of modularity, we refactored the matrix
+  library to implement an abstract \texttt{CONTAINER} signature. Then based on
+  this signature, it became possible to create sub-signatures that specified the
+  types of the CONTAINER signature. A good example is shown below:
+
+  \begin{verbatim}
+    signature CONTAINER = sig
+    
+      (* ADT of the container *)
+      type 'a container
+      (* type used to index the container *)
+      type index
+      (* type used to represent the size of the container *)
+      type size
+    ...
+    end
+
+    (* Matrices that are square and so only need size to be a single int *)
+    signature SQUAREMATRIX = sig
+    
+      include CONTAINER where type size = int
+    
+      val intToIndex : 'a container * int -> index
+    
+    end
+
+  \end{verbatim}
+  In this example we show the relevant parts of the \texttt{CONTAINER} signature
+  and how we used that signature to create a \textit{more specific}
+  \texttt{SQUAREMATRIX} signature e.g. a matrix whose size datatype need only be
+  a single integer value. This allows for a very flexible and modular
+  implementation, in addition to square matrices we could create jagged matrices
+  by following the same pattern viz. defining a \texttt{JAGGEDMATRIX} and
+  setting size to ``int * int''.
+
+  Not only is the second layer of abstraction useful for changing matrix
+  properties on the fly, but it is also useful for changing the underlying
+  implementation and dimensionality of the matrix. With this design we were able
+  to create a functor that, when given a structure of type
+  \texttt{SQUAREMATRIX}, and a structure of type \texttt{VECT} will return a
+  matrix of whose underlying datatype is implemented by a structure, V of type
+  \texttt{VECT}, that dictates the underlying datatype of the matrix, and a
+  structure M, of type \texttt{SQUAREMATRIX} that specifies the datatype that
+  stores the V structure. For example, we create matrices that are created with
+  arrays, vectors and lists by passing each as a structure of type
+  \texttt{VECT}; any such data structure is viable as long as it supports the
+  \texttt{VECT} signature. By altering the structure M, of type
+  \texttt{SQUAREMATRIX} we create n-dimensional matrices. So by varying both we
+  gain the ability to create n-dimensional matrices, with abstracted underlying
+  data types. Thus, the double abstracted design of our matrix library is a
+  semantic definition of a matrix, which separates and abstracts the underlying
+  datatype implementation from the dimensionality of the matrix and the
+  underlying implementation details, thereby allowing for extreme reuse and
+  flexibility.
+  
   \subsection{The Functor is love, the Functor is life}
+  % How functors enabled our clean decomposition and modular design
 
 \end{document}
