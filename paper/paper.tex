@@ -38,6 +38,8 @@
 	% \end{abstract}
 
   \section{Introduction}
+
+  
   \section{Overview of Project}
   % A high-level overview of what your project is about. This should answer the
   % following questions: What is the domain? Who are the users? What kinds of
@@ -98,7 +100,10 @@
   be used to implement the next kind of module.
   These module structures are bound to functors like \texttt{TttStateFn} which
   takes a module implementing a square matrix module (\texttt{SQUAREMATRIX})
-  and returns a module that implements \texttt{TTTSTATE}.
+  and returns a module that implements \texttt{TTTSTATE}. The functors in
+  \texttt{tictactoe.sml} effectively take a module structure that implements the
+  previous module of the game pattern and produce the current (or next)
+  modular piece.
   
   The functor \texttt{TttActionFn} (used by modules structures like
   \texttt{TttAction} and \texttt{Ttt3DAction}) takes a module that implements
@@ -107,8 +112,9 @@
   modules which implement \texttt{TTTACTION} and return a module that implements
   \texttt{AGENT}.
 
-  We can then instantiate a structure like \texttt{TttExecRandom} that will run
-  a game of \textit{Tic-tac-toe} by providing our \texttt{ExecFn} functor from
+  We can then instantiate a structure (like \texttt{TttExecRandom} for example)
+  that will run a game of \textit{Tic-tac-toe}
+  To do so we provide our \texttt{ExecFn} functor from
   \texttt{game.sml} with a module that implements \texttt{AGENT}.
   \texttt{ExecFn} then gives us a module that implements \texttt{EXEC}.
   
