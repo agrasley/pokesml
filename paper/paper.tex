@@ -42,8 +42,15 @@
   % A high-level overview of what your project is about. This should answer the
   % following questions: What is the domain? Who are the users? What kinds of
   % things can those users do with your project?
-  
-  
+
+  Our project initially began as a pokemon simulator but early on we realized
+  that we could make better use of the SML module system by approaching the
+  problem of simulating player-based games in a more abstract way.
+  By doing this we could use the basic notion of what a game simulation required
+  and isolate a pattern to follow for any number of games that fit this
+  adversarial model.
+  A game would then be a specific implementation - in our case tic tac toe -
+  that used this pattern.
 
   \section{Program description}
   % A list and brief description of all of the signatures, modules, and functors
@@ -53,7 +60,12 @@
   % proper context. It isn’t necessary to describe every helper function, but this
   % section should provide a reasonably complete overview of the content of your
   % project.
-
+  Our project is separated between the code that describes the game simulation
+  and the code that used this to make a specific tic tac toe implementation.
+  The game simulation is located in the \texttt{game.sml} file. The code for 
+  tic tac toe implementation is spread out between \texttt{tictactoe.sml} and
+  \texttt{matrix.sml}. 
+  
 
 
 	\section{Design Decisions}
