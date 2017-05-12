@@ -1,2 +1,6 @@
 .#*
-!paper.tex
+paper/paper.log
+paper/paper.synctex.gz
+paper/auto/paper.el
+paper/paper.fls
+paper/paper.fdb_latexmk
