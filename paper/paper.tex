@@ -68,21 +68,24 @@
   \texttt{tictactoe.sml} and uses modules from \texttt{matrix.sml}.
 
   As we touched on before - the notion of a game is generalized in the
-  \texttt{game.sml} file. This defines the modules to run a game.
+  \texttt{game.sml} file. This defines the signatures and functor to run a game.
   The general pattern for a game under our model consists of three purposely
   isolated pieces.
-  These are \textit{State}, \textit{Actions}, and \textit{Agents}.
+  These are \textit{State}, \textit{Actions}, and \textit{Agents} which are
+  each given their own signature in \texttt{game.sml}.
   These are then wrapped together with a functor. The idea is that any game
   consists of a state, a set of actions on that state, and an agents that take
   actions for a state. A specific implementation of a game would use the
-  relationship between these three general pieces to define a runnable game.
+  relationship between these three general pieces to define a runnable game with
+  its own modules.
 
   Our implementation of \textit{Tic-tac-toe} uses this game model to operate and
   is primarily defined within \texttt{tictactoe.sml}.
   Here we have two signatures - one that extends state (the \texttt{STATE}
   signature from \texttt{game.sml}) for \textit{Tic-tac-toe}
   called \texttt{TTTSTATE} and another that does the same with action called
-  \texttt{TTTACTION} - we don't extend the \texttt{AGENT} signature specifically.
+  \texttt{TTTACTION} - we don't extend the \texttt{AGENT} signature specifically
+  for \textit{Tic-tac-toe}.
 
   There are many module structures instantiated here for the various kinds of
   state, actions and agents that we eventually want to use -
@@ -94,12 +97,20 @@
   The functor \texttt{TttActionFn} (used by modules structures like
   \texttt{TttAction} and \texttt{Ttt3DAction}) takes a module that implements
   \texttt{TTTSTATE} and gives us a module implementing \texttt{TTTACTION}.
+  The functors \texttt{TttRandomAgent} and \texttt{TttHumanAgentFn} take
+  modules which implement \texttt{TTTACTION} and return a module that implements
+  \texttt{AGENT}.
+
+  We can then instantiate a structure like \texttt{TttExecRandom} that will run
+  a game of \textit{Tic-tac-toe} by providing our \texttt{ExecFn} functor from
+  \texttt{game.sml} with a module that implements \texttt{AGENT}.
+  \texttt{ExecFn} then gives us a module that implements \texttt{EXEC}.
   
-  The idea being that we created specific modules structures
-  (like \texttt{TttState}) for different
-  cases of actions and states that may occur in various kinds of
-  \textit{Tic-tac-toe} games. We then described functors
-  which linked these structures to the functions meant for that specific use.
+  The idea being that we instantiated specific module structures
+  (like \texttt{TttState}) for different cases of actions and states that may
+  occur in various kinds of \textit{Tic-tac-toe} games.
+  We then described functors which linked these structures to the functions
+  meant for that specific use and returned a new .
   When provided with the correct input module these functors will give us
   modules that implement that portion of the game pattern - which we then use
   with another structure and another functor for the next modular piece of the
