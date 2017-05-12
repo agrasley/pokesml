@@ -140,13 +140,14 @@
   % How we came up with the abstract design
   The design for our game engine stemmed from trying to isolate the common
   general components of what would be required to create a running game.
-  Rather than focus on creating one specific game implementation - we wanted to
+  Rather than focus on creating one specific game implementation where these
+  problems are addressed in an \textit{ad hoc} way - we wanted to
   look at the larger picture and view the problem in terms of the common pattern
   that emerged between these kinds of games.
   
   Each of the portions of the \textit{State}-\textit{Actions}-\textit{Agents}
   design is independent so that - once created - it does not rely on other
-  modules for it's internal pieces.
+  modules for its internal pieces.
   Each of the constituent parts of the game engine is more akin to a node on a
   graph and the interfaces are like edges.
   The pieces should be thought of as islands of code that could then interact
