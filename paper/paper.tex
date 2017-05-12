@@ -226,8 +226,8 @@
   \end{verbatim}
   We decided against this approach i.e. isolating IO into a separate module,
   because it began to pollute our design's dependency graph with unwanted edges.
-  In haskell, type class instances exist in an global overloaded name space,
-  that takes advantage of haskell's dispatch system. So each data type that is
+  In Haskell, type class instances exist in an global overloaded name space,
+  that takes advantage of Haskell's dispatch system. So each data type that is
   implemented for the \texttt{Show} typeclass is able to be printed to StdOut
   \textit{without} carrying around its respective show function. This is not the
   case in SML, and it was sorely missed in our implementation. If we were to
@@ -235,10 +235,10 @@
   then an IO dependency would be requisite anytime we needed to perform any IO.
   Thus, the IO node would become a dominating node in our dependency graph, and
   the its import into every functor would quickly become boilerplate and
-  unweidly. Hence, we chose an SML style design, where the structures that are
+  unwieldy. Hence, we chose an SML style design, where the structures that are
   mapped upon carry any relevant functions with them, which maintains a clean
   decomposition in SML. This type of structure bloat, although disgraceful to a
-  haskell programming, seems to be encouraged by SML's module system.
+  Haskell programming, seems to be encouraged by SML's module system.
 
   \subsection{You can do it in 2-dimensions, but can you do it in n-dimensions!}
   Our initial intent was to implement a pokemon battle simulator. As we
@@ -251,9 +251,10 @@
   dimensions and underlying implementation details. While it was abstract, it was not very modular,
   as it required writing a new module from the ground up if any of the 
   implementation details were to be changed. Thus, in the spirit of modularity, we refactored the matrix
-  library to implement an abstract \texttt{CONTAINER} signature. Then based on
-  this signature, it became possible to create sub-signatures that specified the
-  types of the CONTAINER signature. A good example is shown below:
+  library to implement a \texttt{CONTAINER} signature that specifies the interface for
+  a container abstract data type. As above, we were able to use structural matching and the
+  \texttt{include} keyword to extend our container ADT to more specific kinds of container. A good
+  example is shown below:
 
   \begin{verbatim}
     signature CONTAINER = sig
@@ -280,32 +281,66 @@
   In this example we show the relevant parts of the \texttt{CONTAINER} signature
   and how we used that signature to create a \textit{more specific}
   \texttt{SQUAREMATRIX} signature e.g. a matrix whose size datatype need only be
-  a single integer value. This allows for a very flexible and modular
+  a single integer value. Similarly, we can define a \texttt{VECT} signature that describes
+  containers that can be used as one-dimensional vectors (like list or arrays) by restricting 
+  both the \texttt{size} and \texttt{index} types to be \texttt{int}.
+  This allows for a very flexible and modular
   implementation, in addition to square matrices we could create jagged two-dimensional matrices
   by following the same pattern viz. defining a \texttt{JAGGEDMATRIX} and
   setting size to ``int * int''.
 
-  Not only is the second layer of abstraction useful for changing matrix
-  properties on the fly, but it is also useful for changing the underlying
-  implementation and dimensionality of the matrix. With this design we were able
-  to create a functor that, when given a structure of type
-  \texttt{SQUAREMATRIX}, and a structure of type \texttt{VECT} will return a
-  matrix of whose underlying datatype is implemented by a structure, V of type
-  \texttt{VECT}, that dictates the underlying datatype of the matrix, and a
-  structure M, of type \texttt{SQUAREMATRIX} that specifies the datatype that
-  stores the V structure. For example, we create matrices that are created with
-  arrays, vectors and lists by passing each as a structure of type
-  \texttt{VECT}; any such data structure is viable as long as it supports the
-  \texttt{VECT} signature. By altering the structure M, of type
-  \texttt{SQUAREMATRIX} we create n-dimensional matrices. So by varying both we
-  gain the ability to create n-dimensional matrices, with abstracted underlying
-  data types. Thus, the double abstracted design of our matrix library is a
-  semantic definition of a matrix, which separates and abstracts the underlying
-  datatype implementation from the dimensionality of the matrix and the
-  underlying implementation details, thereby allowing for extreme reuse and
-  flexibility.
+  One consequence of this design is that you can create n-dimensional square matrices given only
+  modules implementing \texttt{VECT} and a functor. We define a functor \texttt{SquareMatrixFn}
+  that takes a module \texttt{M} implementing \texttt{SQUAREMATRIX} and a module \texttt{V}
+  implementing \texttt{VECT} and produces a new square matrix of dimension n+1 where n is the
+  dimensionality of M. We simply use \texttt{V} to store the polymorphic matrix elements and \texttt{M} to
+  store rows of \texttt{V}. The type of indices of our new matrix is just the product of the index types
+  of its components.
   
-  \subsection{The Functor is love, the Functor is life}
-  % How functors enabled our clean decomposition and modular design
+  Because all \texttt{VECT} modules also implement \texttt{SQUAREMATRIX}, we
+  can create two-dimensional matrices by passing any two \texttt{VECT} implementations to our functor.
+  From there, we can create n-dimensional matrices by simply passing the result back into the functor
+  as \texttt{M} any number of times. Therefore, given only a module implementing \texttt{VECT}, our
+  functor can automatically produce modules representing matrices of n-dimensions.
+  Because functors are not first-class, we cannot automate this process by passing in
+  the intended dimensionality as an integer argument, so instead we are stuck threading the results
+  of our functor back into itself. This could prove tedious for matrices with high dimensionality, but for our
+  purposes was acceptable.
+  
+  This use of functors also allows for mixing of containers in matrices.
+  We implemented \texttt{VECT} for the basis array, list, and vector libraries. Our functor can take any
+  combination of these and produce a matrix module that works the same
+  as any other. As these implementation details are hidden by the container ADT, we can safely mix
+  any of them to form another valid container matrix.
+  
+  All of this has the result that our \textit{Tic-tac-toe} implementation works for matrices of any
+  dimensionality and implemented using a variety of data structures.
+  
+  \subsection{Coupling}
+  
+  One area where our implementation encountered some issues was in the coupling of our system.
+  Despite our best efforts, our modules are not as loosely coupled as we would like. Each module
+  carries with it the modules that it depends on as part of its structure. This is because many of the
+  interfaces depend on type definitions contained in the modules that they depend on (for example,
+  \texttt{ACTION} modules depend on the definition of the \texttt{state} type defined in \texttt{STATE}).
+  This is not ideal in terms of
+  coupling, and forced us to use a lot of trivial functors that thread these dependencies through our
+  system.
+  
+  Resolving this is a tricky problem. If we make the types of our abstract game interface all concrete,
+  we could gain looser coupling at the cost of how generic our abstract game engine can be. Concrete
+  type definitions in all signatures would alleviate this problem, but we would wind up unable to extend
+  our abstract interface to any other games aside from \textit{Tic-tac-toe}. Being locked into a single
+  implementation in this way would simply reduce our modules to simple namespaces with none of the 
+  abstraction or extensibility benefits associated with modular programming.
+  
+  One possible solution to this problem could be to somehow serialize interactions between
+  different modules into a standard format (much like how web servers and clients often convert data
+  into JSON to pass back and forth). However, this still seems to include some notion of coupling, just
+  deferred now to serialization and deserialization processes. A module would still have to know how to
+  serialize and deserialize information and how to interpret the communications it receives from 
+  other modules. So while we would decouple at the type level, we would still retain coupling at the
+  informational level. It is unclear if there is a cleaner decomposition of our game domain that would
+  allow for looser coupling while still retaining similar abstraction and cohesion as our current system.
 
 \end{document}
