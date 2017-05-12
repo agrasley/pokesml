@@ -43,14 +43,14 @@
   % following questions: What is the domain? Who are the users? What kinds of
   % things can those users do with your project?
 
-  Our project initially began as a pokemon simulator but early on we realized
+  Our project initially began as a pokemon simulator - but early on we realized
   that we could make better use of the SML module system by approaching the
-  problem of simulating player-based games in a more abstract way.
-  By doing this we could use the basic notion of what a game simulation required
+  problem of simulating player-based games in a more abstract general way.
+  By doing so we could define the basic notion of what a game simulation requires
   and isolate a pattern to follow for any number of games that fit this
-  adversarial model.
-  A game would then be a specific implementation - in our case tic tac toe -
-  that used this pattern.
+  model.
+  A game would then be a specific implementation - in our case
+  \textit{Tic-tac-toe} - that used this pattern.
 
   \section{Program description}
   % A list and brief description of all of the signatures, modules, and functors
@@ -60,13 +60,51 @@
   % proper context. It isn’t necessary to describe every helper function, but this
   % section should provide a reasonably complete overview of the content of your
   % project.
-  Our project is separated between the code that describes the game simulation
-  and the code that used this to make a specific tic tac toe implementation.
-  The game simulation is located in the \texttt{game.sml} file. The code for 
-  tic tac toe implementation is spread out between \texttt{tictactoe.sml} and
-  \texttt{matrix.sml}. 
   
+  Our project is separated between the code that describes the game simulation
+  and the code that uses this to make a specific \textit{Tic-tac-toe} implementation.
+  The game simulation is located in the \texttt{game.sml} file. Likewise, the
+  code for the \textit{Tic-tac-toe} implementation is located in
+  \texttt{tictactoe.sml} and uses modules from \texttt{matrix.sml}.
 
+  As we touched on before - the notion of a game is generalized in the
+  \texttt{game.sml} file. This defines the modules to run a game.
+  The general pattern for a game under our model consists of three purposely
+  isolated pieces.
+  These are \textit{State}, \textit{Actions}, and \textit{Agents}.
+  These are then wrapped together with a functor. The idea is that any game
+  consists of a state, a set of actions on that state, and an agents that take
+  actions for a state. A specific implementation of a game would use the
+  relationship between these three general pieces to define a runnable game.
+
+  Our implementation of \textit{Tic-tac-toe} uses this game model to operate and
+  is primarily defined within \texttt{tictactoe.sml}.
+  Here we have two signatures - one that extends state (the \texttt{STATE}
+  signature from \texttt{game.sml}) for \textit{Tic-tac-toe}
+  called \texttt{TTTSTATE} and another that does the same with action called
+  \texttt{TTTACTION} - we don't extend the \texttt{AGENT} signature specifically.
+
+  There are many module structures instantiated here for the various kinds of
+  state, actions and agents that we eventually want to use -
+  such as \texttt{TttState} and \texttt{TttAction} for instance.
+  These are bound to functors like \texttt{TttStateFn} which takes
+  a module implementing a square matrix module (\texttt{SQUAREMATRIX})
+  and returns a module that implements \texttt{TTTSTATE}.
+  
+  The functor \texttt{TttActionFn} (used by modules structures like
+  \texttt{TttAction} and \texttt{Ttt3DAction}) takes a module that implements
+  \texttt{TTTSTATE} and gives us a module implementing \texttt{TTTACTION}.
+  
+  The idea being that we created specific modules structures
+  (like \texttt{TttState}) for different
+  cases of actions and states that may occur in various kinds of
+  \textit{Tic-tac-toe} games. We then described functors
+  which linked these structures to the functions meant for that specific use.
+  When provided with the correct input module these functors will give us
+  modules that implement that portion of the game pattern - which we then use
+  with another structure and another functor for the next modular piece of the
+  game.
+  % ugh I should probably rewrite that last paragraph
 
 	\section{Design Decisions}
   % (Most important!) Describe in detail 3-5 design decisions you made during your
