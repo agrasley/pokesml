@@ -137,9 +137,38 @@
   % your project to compare and contrast with the final version.
   \subsection{Creating an Abstract Game Engine}
   % How we came up with the abstract design
-  \subsection{Higher Ordered Signatures, and the ``Include'' incantation}
+  \subsection{Exploiting Structural Typing}
   % Something about how previously we just had signature -> structure -> functors
-  % but with include it became possible to 
+  % but with include it became possible to
+  One major element of SML's module system that we were about to exploit in our project was
+  the structural matching of modules to signatures. Coupled with liberal use of the \texttt{include}
+  keyword, this allowed us to easily extend signature definitions in a way reminiscent of inheritance
+  and subclassing in OOP.
+  
+  This design decision is most apparent in our extension of the abstract game engine to
+  our chosen implementation domain of \textit{Tic-tac-toe}. Our more abstract interfaces defined
+  in \texttt{game.sml} were often insufficient for describing the full interface
+  needed for our concrete implementation. For example, \textit{Tic-tac-toe} state modules
+  needed to export a \texttt{cell} datatype that represented the actual Xs and Os placed on the game
+  board. Including this datatype in the abstract \texttt{STATE} signature in \texttt{game.sml}
+  would be inappropriate, as any game outside of \textit{Tic-tac-toe} has no need for the
+  \texttt{cell} datatype. Instead, we created a new signature \texttt{TTTSTATE} that extended
+  the \texttt{STATE} signature via the \texttt{include} keyword with additional interface elements.
+  Additionally, this extension refined
+  some of the abstract types in \texttt{STATE} using the \texttt{where} keyword in order to give them
+  concrete type definitions. For example, the abstract type \texttt{state} is defined to always be
+  equivalent to the type \texttt{cell * (cell Matrix.container)} in a module implementing \texttt{TTTSTATE}.
+  
+  We were able to exploit this refined state signature to narrow the domain of the \texttt{TttActionFn}
+  functor to only states appropriate for \textit{Tic-tac-toe}, rather than any abstract game state.
+  However, thanks to the structural matching properties of the SML module system, we can still
+  use a module implementing \texttt{TTTSTATE} wherever we would use a module implementing
+  \texttt{STATE}. In fact, because the matching is structural and not nominal, we get this property
+  for free, with no need to specify the relationship by name in the code. This allows us to still use
+  signatures and functors in our implementation that depend only on the more abstract 
+  definitions like the \texttt{AGENT} signature
+  or the \texttt{ExecFn} functor, which are only defined for the more abstract game engine. 
+  
   \subsection{Separation of IO, or How I learned to not fight SML in search of Purity}
   In the first implementation of our project we simulated Haskell's IO monad by
   creating a ``show'' signature, and an ``IO'' functor, as shown below:

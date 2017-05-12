@@ -2,7 +2,7 @@
 \BOOKMARK [1][-]{section.2}{Program description}{}% 2
 \BOOKMARK [1][-]{section.3}{Design Decisions}{}% 3
 \BOOKMARK [2][-]{subsection.3.1}{Creating an Abstract Game Engine}{section.3}% 4
-\BOOKMARK [2][-]{subsection.3.2}{Higher Ordered Signatures, and the ``Include'' incantation}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.2}{Exploiting Structural Typing}{section.3}% 5
 \BOOKMARK [2][-]{subsection.3.3}{Separation of IO, or How I learned to not fight SML in search of Purity}{section.3}% 6
 \BOOKMARK [2][-]{subsection.3.4}{You can do it in 2-dimensions, but can you do it in n-dimensions!}{section.3}% 7
 \BOOKMARK [2][-]{subsection.3.5}{The Functor is love, the Functor is life}{section.3}% 8
