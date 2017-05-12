@@ -139,6 +139,59 @@
   \subsection{Creating an Abstract Game Engine}
   \subsection{Higher Ordered Signatures, and the ``Include'' incantation}
   \subsection{Separation of IO, or How I learned to not fight SML in search of Purity}
+  In the first implementation of our project we simulated Haskell's IO monad by
+  creating a ``show'' signature, and an ``IO'' functor, as shown below:
+
+  \begin{verbatim}
+    signature SHOW =
+    sig
+        type a
+        val show : a -> string
+    end
+    
+    signature IO =
+    sig
+        structure S : SHOW
+    
+        val printIO : S.a -> unit
+        val read : 'a -> string option
+        val say : string -> unit
+    end
+    
+    functor Io (structure Sh : SHOW) : IO =
+    struct
+    
+      structure S = Sh
+    
+      (* append a new line to a str, this is expensive *)
+      fun appendNewLine str = implode $ (explode str) @ [#"\n"]
+    
+      fun printIO x = print o appendNewLine o S.show $ x
+    
+      (* function to get user input, it doesn't do anything with its argument *)
+      fun read _ = TextIO.inputLine TextIO.stdIn
+    
+      fun say str = print o appendNewLine $ str
+    
+    end
+  \end{verbatim}
+  We decided against this approach i.e. isolating IO into a separate module,
+  because it began to pollute our design's dependency graph with unwanted edges.
+  In haskell type class instances exist in an global overloaded name space, that
+  takes advantage of haskell's dispatch system. So each data type that is
+  implemented for the \texttt{Show} typeclass is able to be printed to StdOut
+  \textit{without} carrying around its respective show function. This is not the
+  case in SML and it was sorely missed in our implementation. If we were to
+  follow the Haskell style of IO (separating impure and pure code explicitly),
+  then an IO dependency would be requisite anytime we needed to perform any IO.
+  Thus, the IO node would become a dominating node in our dependency graph and
+  the import of it into every functor would quickly become unweidly and
+  boilerplate. Hence, we chose an SML style design where the structures that are
+  mapped upon carry any relevant functions with them to maintain a clean
+  decomposition in our design. This type of structure bloat, although
+  disgraceful to a haskell programming, seems to be encouraged by SML's module
+  system.
+
   \subsection{You can do it in 2-dimensions, but can you do it in n-dimensions!}
   \subsection{The Functor is love, the Functor is life}
 
