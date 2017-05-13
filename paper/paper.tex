@@ -27,7 +27,7 @@
 \usepackage{graphicx}
 \usepackage{multicol}
 
-\title{N-dimensional Tic Tac Toe, and Adventure in Modules}
+\title{N-dimensional Tic Tac Toe, an Adventure in Modules}
 \author{Alex Grasley \and Jeff Young \and Michael McGirr}
 \date{}
 
@@ -234,11 +234,12 @@
   follow the Haskell style of IO (separating impure and pure code explicitly),
   then an IO dependency would be requisite anytime we needed to perform any IO.
   Thus, the IO node would become a dominating node in our dependency graph, and
-  the its import into every functor would quickly become boilerplate and
+  then its import into every functor would quickly become boilerplate and
   unwieldy. Hence, we chose an SML style design, where the structures that are
   mapped upon carry any relevant functions with them, which maintains a clean
   decomposition in SML. This type of structure bloat, although disgraceful to a
-  Haskell programming, seems to be encouraged by SML's module system.
+  Haskell programmer, seems to be encouraged by SML's module system, and is
+  discussed in detail below.
 
   \subsection{You can do it in 2-dimensions, but can you do it in n-dimensions!}
   Our initial intent was to implement a pokemon battle simulator. As we

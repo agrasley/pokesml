@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1494612976 "paper.tex" "paper.pdf" "paper" 1494612976
+["pdflatex"] 1494637456 "paper.tex" "paper.pdf" "paper" 1494637456
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1492575644 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1492575651 1004 54797486969f23fa377b128694d548df ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex9.tfm" 1492575651 996 a18840b13b499c08ac2de96a99eda4bc ""
@@ -147,11 +147,11 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1492575665 31661 3832dc67fcae1bb0c47594ea86c25797 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1493655551 2220423 fef69922126604e2c6136500ed3e2ad4 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1492617660 7587051 be49c3c40b70490d6726327332bfcd6b ""
-  "paper.aux" 1494612976 1616 42e00f2f6111d672cb19749fa53f62e7 ""
-  "paper.out" 1494612976 670 ca9c38f226fdb3c13ba5aed9016d18d6 ""
-  "paper.tex" 1494612974 12559 a03ed8941c01f6ccde7376c8ed95f2e8 ""
+  "paper.aux" 1494637456 1554 75043f9f05f8366412986495bdcdc8aa ""
+  "paper.out" 1494637456 608 0084a68402aed34ef89c368a53042b96 ""
+  "paper.tex" 1494637455 19126 96506ad31bcd3103c8048855c815f7f8 ""
   (generated)
+  "paper.log"
   "paper.pdf"
   "paper.out"
-  "paper.log"
   "paper.aux"
